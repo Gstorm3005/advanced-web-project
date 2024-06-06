@@ -25,79 +25,79 @@ app.use(cors({
 // --------------------------------------------------------------
 
 
-app.use('/enduser', createProxyMiddleware({
-    target: 'http://localhost:5001',
-    changeOrigin: true,
-    pathRewrite: { '^/enduser': '' },
-}));
-
-app.use('/restaurateur', createProxyMiddleware({
-    target: 'http://localhost:5002',
-    changeOrigin: true,
-    pathRewrite: { '^/restaurateur': '' },
-}));
-
-app.use('/delivery', createProxyMiddleware({
-    target: 'http://localhost:5003',
-    changeOrigin: true,
-    pathRewrite: { '^/delivery': '' },
-}));
-
-app.use('/developer', createProxyMiddleware({
-    target: 'http://localhost:5004',
-    changeOrigin: true,
-    pathRewrite: { '^/developer': '' },
-}));
-
-app.use('/commercial', createProxyMiddleware({
-    target: 'http://localhost:5005',
-    changeOrigin: true,
-    pathRewrite: { '^/commercial': '' },
-}));
-
-app.use('/technical', createProxyMiddleware({
-    target: 'http://localhost:5006',
-    changeOrigin: true,
-    pathRewrite: { '^/technical': '' },
-}));
-
-// --------------------------------------------------------------
-
 // app.use('/enduser', createProxyMiddleware({
-//     target: 'http://enduser-backend:5001',
+//     target: 'http://localhost:5001',
 //     changeOrigin: true,
 //     pathRewrite: { '^/enduser': '' },
 // }));
 
 // app.use('/restaurateur', createProxyMiddleware({
-//     target: 'http://restaurateur-backend:5002',
+//     target: 'http://localhost:5002',
 //     changeOrigin: true,
 //     pathRewrite: { '^/restaurateur': '' },
 // }));
 
 // app.use('/delivery', createProxyMiddleware({
-//     target: 'http://delivery-backend:5003',
+//     target: 'http://localhost:5003',
 //     changeOrigin: true,
 //     pathRewrite: { '^/delivery': '' },
 // }));
 
 // app.use('/developer', createProxyMiddleware({
-//     target: 'http://developer-backend:5004',
+//     target: 'http://localhost:5004',
 //     changeOrigin: true,
 //     pathRewrite: { '^/developer': '' },
 // }));
 
 // app.use('/commercial', createProxyMiddleware({
-//     target: 'http://commercial-backend:5005',
+//     target: 'http://localhost:5005',
 //     changeOrigin: true,
 //     pathRewrite: { '^/commercial': '' },
 // }));
 
 // app.use('/technical', createProxyMiddleware({
-//     target: 'http://technical-backend:5006',
+//     target: 'http://localhost:5006',
 //     changeOrigin: true,
 //     pathRewrite: { '^/technical': '' },
 // }));
+
+// --------------------------------------------------------------
+
+app.use('/enduser', createProxyMiddleware({
+    target: 'http://enduser-backend:5001',
+    changeOrigin: true,
+    pathRewrite: { '^/enduser': '' },
+}));
+
+app.use('/restaurateur', createProxyMiddleware({
+    target: 'http://restaurateur-backend:5002',
+    changeOrigin: true,
+    pathRewrite: { '^/restaurateur': '' },
+}));
+
+app.use('/delivery', createProxyMiddleware({
+    target: 'http://delivery-backend:5003',
+    changeOrigin: true,
+    pathRewrite: { '^/delivery': '' },
+}));
+
+app.use('/developer', createProxyMiddleware({
+    target: 'http://developer-backend:5004',
+    changeOrigin: true,
+    pathRewrite: { '^/developer': '' },
+}));
+
+app.use('/commercial', createProxyMiddleware({
+    target: 'http://commercial-backend:5005',
+    changeOrigin: true,
+    pathRewrite: { '^/commercial': '' },
+}));
+
+app.use('/technical', createProxyMiddleware({
+    target: 'http://technical-backend:5006',
+    changeOrigin: true,
+    pathRewrite: { '^/technical': '' },
+}));
 
 
 // --------------------------------------------------------------
