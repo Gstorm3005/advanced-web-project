@@ -14,6 +14,7 @@ const notifLivreurRoutes = require('./routes/notifLivreurRoutes');
 const app = express();
 
 mongoose.connect('mongodb://127.0.0.1:27017/clientdb')
+// mongoose.connect('mongodb://mongo:27017/clientdb')
 .then(() => console.log('MongoDB connected...'))
 .catch(err => console.log(err));
 

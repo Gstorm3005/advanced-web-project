@@ -22,6 +22,9 @@ app.use(cors({
 //     }
 // });
 
+// --------------------------------------------------------------
+
+
 app.use('/enduser', createProxyMiddleware({
     target: 'http://localhost:5001',
     changeOrigin: true,
@@ -58,20 +61,49 @@ app.use('/technical', createProxyMiddleware({
     pathRewrite: { '^/technical': '' },
 }));
 
+// --------------------------------------------------------------
+
+// app.use('/enduser', createProxyMiddleware({
+//     target: 'http://enduser-backend:5001',
+//     changeOrigin: true,
+//     pathRewrite: { '^/enduser': '' },
+// }));
+
+// app.use('/restaurateur', createProxyMiddleware({
+//     target: 'http://restaurateur-backend:5002',
+//     changeOrigin: true,
+//     pathRewrite: { '^/restaurateur': '' },
+// }));
+
+// app.use('/delivery', createProxyMiddleware({
+//     target: 'http://delivery-backend:5003',
+//     changeOrigin: true,
+//     pathRewrite: { '^/delivery': '' },
+// }));
+
+// app.use('/developer', createProxyMiddleware({
+//     target: 'http://developer-backend:5004',
+//     changeOrigin: true,
+//     pathRewrite: { '^/developer': '' },
+// }));
+
+// app.use('/commercial', createProxyMiddleware({
+//     target: 'http://commercial-backend:5005',
+//     changeOrigin: true,
+//     pathRewrite: { '^/commercial': '' },
+// }));
+
+// app.use('/technical', createProxyMiddleware({
+//     target: 'http://technical-backend:5006',
+//     changeOrigin: true,
+//     pathRewrite: { '^/technical': '' },
+// }));
+
+
+// --------------------------------------------------------------
+
+
 const PORT = 5000;
 app.listen(PORT, () => {
     console.log(`Gateway running on port ${PORT}`);
 });
-// /enduser/backend/node_modules
-// /enduser/frontend/node_modules
-// /restaurateur/backend/node_modules
-// /restaurateur/frontend/node_modules
-// /delivery/backend/node_modules
-// /delivery/frontend/node_modules
-// /developer/backend/node_modules
-// /developer/frontend/node_modules
-// /commercial/backend/node_modules
-// /commercial/frontend/node_modules
-// /technical/backend/node_modules
-// /technical/frontend/node_modules
-// /gateway/node_modules
