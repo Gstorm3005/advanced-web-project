@@ -2,37 +2,39 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function App() {
-    const [products, setProducts] = useState([]);
+    const [articles, setArticles] = useState([]);
     const [name, setName] = useState('');
+    const [category, setCategory] = useState('');
+    const [quantity, setQuantity] = useState('');
     const [price, setPrice] = useState('');
 
     useEffect(() => {
-        fetchProducts();
+        fetchArticles();
     }, []);
 
-    const fetchProducts = () => {
-        axios.get('http://localhost:5000/restaurateur/api/products', {
+    const fetchArticles = () => {
+        axios.get('http://localhost:5000/restaurateur/api/articles', {
             headers: {
                 authenticated: 'true'
             }
         })
         .then(response => {
-            setProducts(response.data);
+            setArticles(response.data);
         })
         .catch(error => {
-            console.error('There was an error fetching the products!', error);
+            console.error('There was an error fetching the articles!', error);
         });
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.post('http://localhost:5000/restaurateur/api/products', { name, price }, {
+        axios.post('http://localhost:5000/restaurateur/api/articles', { name, category, quantity, price }, {
             headers: {
                 authenticated: 'true'
             }
         })
         .then(response => {
-            setProducts([...products, response.data]);
+            setArticles([...articles, response.data]);
             setName('');
             setPrice('');
         })
@@ -43,7 +45,7 @@ function App() {
 
     return (
         <div className="App">
-            <h1>restaurateur - Products</h1>
+            <h1>restaurateur - Articles</h1>
             <form onSubmit={handleSubmit}>
                 <div>
                     <label htmlFor="name">Name</label>
@@ -52,6 +54,26 @@ function App() {
                         id="name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <label htmlFor="price">Category</label>
+                    <input
+                        type="text"
+                        id="category"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <label htmlFor="price">Quantity</label>
+                    <input
+                        type="number"
+                        id="quantity"
+                        value={quantity}
+                        onChange={(e) => setQuantity(e.target.value)}
                         required
                     />
                 </div>
@@ -65,12 +87,12 @@ function App() {
                         required
                     />
                 </div>
-                <button type="submit">Create Product</button>
+                <button type="submit">Create Article</button>
             </form>
-            <h2>Products List</h2>
+            <h2>Articles List</h2>
             <ul>
-                {products.map(product => (
-                    <li key={product._id}>{product.name} - ${product.price}</li>
+                {articles.map(article => (
+                    <li key={article._id}>{article.name} - {article.category} - {article.quantity} - ${article.price}</li>
                 ))}
             </ul>
         </div>
