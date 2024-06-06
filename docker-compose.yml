@@ -1,0 +1,77 @@
+version: '3.7'
+services:
+  mongo:
+    image: mongo
+    ports:
+      - '27017:27017'
+  enduser-backend:
+    build: ./enduser/backend
+    ports:
+      - '5001:5001'
+    depends_on:
+      - mongo
+  enduser-frontend:
+    build: ./enduser/frontend
+    ports:
+      - '3001:3001'
+  restaurateur-backend:
+    build: ./restaurateur/backend
+    ports:
+      - '5002:5002'
+    depends_on:
+      - mongo
+  restaurateur-frontend:
+    build: ./restaurateur/frontend
+    ports:
+      - '3002:3002'
+  delivery-backend:
+    build: ./delivery/backend
+    ports:
+      - '5003:5003'
+    depends_on:
+      - mongo
+  delivery-frontend:
+    build: ./delivery/frontend
+    ports:
+      - '3003:3003'
+  developer-backend:
+    build: ./developer/backend
+    ports:
+      - '5004:5004'
+    depends_on:
+      - mongo
+  developer-frontend:
+    build: ./developer/frontend
+    ports:
+      - '3004:3004'
+  commercial-backend:
+    build: ./commercial/backend
+    ports:
+      - '5005:5005'
+    depends_on:
+      - mongo
+  commercial-frontend:
+    build: ./commercial/frontend
+    ports:
+      - '3005:3005'
+  technical-backend:
+    build: ./technical/backend
+    ports:
+      - '5006:5006'
+    depends_on:
+      - mongo
+  technical-frontend:
+    build: ./technical/frontend
+    ports:
+      - '3006:3006'
+  gateway:
+    build: ./gateway
+    ports:
+      - '5000:5000'
+    depends_on:
+      - enduser-backend
+      - restaurateur-backend
+      - delivery-backend
+      - developer-backend
+      - commercial-backend
+      - technical-backend

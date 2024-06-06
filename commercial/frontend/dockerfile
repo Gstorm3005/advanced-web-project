@@ -1,0 +1,15 @@
+FROM node:18.20.3
+
+WORKDIR /app
+
+COPY package.json ./
+RUN npm install
+
+COPY . .
+
+# Set environment variables for the container
+ENV PORT=3005
+
+EXPOSE 3005
+
+CMD ["npm", "start"]
