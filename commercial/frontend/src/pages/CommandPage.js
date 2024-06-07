@@ -5,6 +5,7 @@ import { useState } from 'react';
 // @mui
 import {
   Card,
+  CardContent,
   Table,
   Stack,
   Paper,
@@ -35,8 +36,9 @@ import USERLIST from '../_mock/user';
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
+  { id: 'order_id', label: 'Order ID', alignRight: false },
+  { id: 'total_price', label: 'Total price', alignRight: false },
   { id: 'status', label: 'Status', alignRight: false },
-  { id: '' },
 ];
 
 // ----------------------------------------------------------------------
@@ -70,7 +72,7 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function UserPage() {
+export default function CommandPage() {
   const [open, setOpen] = useState(null);
 
   const [page, setPage] = useState(0);
@@ -152,11 +154,20 @@ export default function UserPage() {
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
-            User
+            Tracking
           </Typography>
-          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            New User
-          </Button>
+
+          <Card style={{ backgroundColor: '#26c6da', color: '#fff', width: '150px', padding: '10px' }}>
+            <CardContent style={{ padding: '10px' }}>
+                <Typography variant="h6" style={{ display: 'flex', alignItems: 'center', fontSize: '1rem' }}>
+                    <Iconify icon={'icomoon-free:stats-bars'} style={{ marginRight: '5px', fontSize: '1.5rem' }} />
+                    121,687 $
+                </Typography>
+                <Typography variant="body2">
+                    Total revenue
+                </Typography>
+            </CardContent>
+          </Card>
         </Stack>
 
         <Card>
@@ -176,7 +187,7 @@ export default function UserPage() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, status, avatarUrl, isVerified } = row;
+                    const { id, name, role, status, company, avatarUrl } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -194,14 +205,12 @@ export default function UserPage() {
                           </Stack>
                         </TableCell>
 
+                        <TableCell align="left">{company}</TableCell>
+
+                        <TableCell align="left">{role}</TableCell>
+
                         <TableCell align="left">
                           <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
-                        </TableCell>
-
-                        <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
-                            <Iconify icon={'eva:more-vertical-fill'} />
-                          </IconButton>
                         </TableCell>
                       </TableRow>
                     );
@@ -273,16 +282,6 @@ export default function UserPage() {
         <MenuItem>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Edit
-        </MenuItem>
-
-        <MenuItem sx={{ color: 'info.main' }}>
-          <Iconify icon={'tabler:eye'} sx={{ mr: 2 }} />
-          Consult
-        </MenuItem>
-
-        <MenuItem sx={{ color: 'warning.main' }}>
-          <Iconify icon={'ant-design:stop-outlined'} sx={{ mr: 2 }} />
-          Suspend
         </MenuItem>
 
         <MenuItem sx={{ color: 'error.main' }}>
