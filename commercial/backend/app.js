@@ -12,7 +12,7 @@ const commandeRoutes = require('./routes/commandeRoutes');
 const notifLivreurRoutes = require('./routes/notifLivreurRoutes');
 
 const app = express();
-
+// afnane
 mongoose.connect('mongodb://127.0.0.1:27017/clientdb')
 // mongoose.connect('mongodb://mongo:27017/clientdb')
 .then(() => console.log('MongoDB connected...'))
