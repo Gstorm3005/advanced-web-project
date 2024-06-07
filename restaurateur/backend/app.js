@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const db = require("./SQLmodels");
 
 const productRoutes = require('./routes/productRoutes');
 const articleRoutes = require('./routes/articleRoutes');
@@ -18,7 +19,11 @@ mongoose.connect('mongodb://127.0.0.1:27017/clientdb')
 .then(() => console.log('MongoDB connected...'))
 .catch(err => console.log(err));
 
-app.use(bodyParser.json());
+db.sequelize.sync()
+.then(() => console.log('MySQL connected...'))
+.catch(err => console.log(err));
+
+app.use(bodyParser.json())
 
 app.use('/api/products', productRoutes);
 app.use('/api/articles', articleRoutes);
@@ -33,3 +38,4 @@ const PORT = 5002;
 app.listen(PORT, () => {
     console.log(`Client backend running on port ${PORT}`);
 });
+
