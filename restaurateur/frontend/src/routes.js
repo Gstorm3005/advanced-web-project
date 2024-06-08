@@ -1,4 +1,7 @@
 import { Navigate, useRoutes } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from "./helpers/AuthContext";
+
 // layouts
 import DashboardLayout from './layouts/dashboard';
 import SimpleLayout from './layouts/simple';
@@ -13,10 +16,13 @@ import DashboardAppPage from './pages/DashboardAppPage';
 // ----------------------------------------------------------------------
 
 export default function Router() {
+  const { authState } = useContext(AuthContext);
+  const isAuthenticated = authState.isAuthenticated;
+  console.log(authState)
   const routes = useRoutes([
     {
       path: '/dashboard',
-      element: <DashboardLayout />,
+      element: isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" />,
       children: [
         { element: <Navigate to="/dashboard/app" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
@@ -27,12 +33,12 @@ export default function Router() {
     },
     {
       path: 'login',
-      element: <LoginPage />,
+      element: isAuthenticated ? <Navigate to="/dashboard/app" /> : <LoginPage />,
     },
     {
       element: <SimpleLayout />,
       children: [
-        { element: <Navigate to="/dashboard/app" />, index: true },
+        { element: <Navigate to={isAuthenticated ? "/dashboard/app" : "/login"} />, index: true },
         { path: '404', element: <Page404 /> },
         { path: '*', element: <Navigate to="/404" /> },
       ],

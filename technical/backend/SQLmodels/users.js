@@ -1,4 +1,3 @@
-// models/users.js
 module.exports = (sequelize, DataTypes) => {
     const users = sequelize.define('users', {
         id: {
@@ -22,7 +21,6 @@ module.exports = (sequelize, DataTypes) => {
         email: {
             type: DataTypes.STRING(150),
             allowNull: false,
-            unique: true,
             validate: {
                 isEmail: true
             }
@@ -44,7 +42,13 @@ module.exports = (sequelize, DataTypes) => {
         },
     }, {
         tableName: 'users',
-        engine: 'InnoDB'
+        engine: 'InnoDB',
+        indexes: [
+            {
+                unique: true,
+                fields: ['email', 'role']
+            }
+        ]
     });
 
     return users;
