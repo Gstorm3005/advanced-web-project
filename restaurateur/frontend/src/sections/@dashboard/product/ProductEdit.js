@@ -12,22 +12,18 @@ import {
   IconButton,
   Container,
   Grid,
-  ImageList,
-  ImageListItem,
   Box,
-  Alert,
   Snackbar,
-  ImageListItemBar
+  Alert
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { useEffect, useState, forwardRef } from 'react';
+import { useState, useEffect, forwardRef } from 'react';
 import axios from 'axios';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
-import { DeleteOutline } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 
 ProductEdit.propTypes = {
@@ -35,11 +31,11 @@ ProductEdit.propTypes = {
   handleClose: PropTypes.func,
   handleMessage: PropTypes.func,
   handleMessageShow: PropTypes.func,
-  editId: PropTypes.number,
+  editId: PropTypes.string,
 };
 
-const Transition = forwardRef((props, ref) => 
-   <Slide direction="up" ref={ref} {...props} />
+const Transition = forwardRef((props, ref) =>
+  <Slide direction="up" ref={ref} {...props} />
 );
 
 const VisuallyHiddenInput = styled('input')({
@@ -55,196 +51,162 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 const validationSchema = Yup.object({
-  reference: Yup.string().required('La référence est requise'),
-  title: Yup.string().required('Le titre est requis'),
-  price: Yup.number().required('Le prix est requis').positive('Le prix doit être positif'),
-  quantity: Yup.number().required('La quantité est requise').min(1, 'La quantité doit être d\'au moins 1'),
-  description: Yup.string().required('La description est requise'),
+  name: Yup.string().required('Name is required'),
+  category: Yup.string().required('Category is required'),
+  price: Yup.number().required('Price is required').positive('Price must be positive'),
 });
 
 export default function ProductEdit({ open, handleClose, handleMessage, handleMessageShow, editId }) {
-  const [images, setImages] = useState([]);
-  const [newImages, setNewImages] = useState([]);
+  const [initialValues, setInitialValues] = useState({
+    name: '',
+    category: '',
+    price: '',
+    path: ''
+  });
   const [croppingImage, setCroppingImage] = useState(null);
-  const [croppingImageName, setCroppingImageName] = useState(null);
+  const [croppingImageUrl, setCroppingImageUrl] = useState(null);
+  const [croppedImageUrl, setCroppedImageUrl] = useState(null);
   const [cropper, setCropper] = useState(null);
-  const [uploading, setUploading] = useState(false); // Added uploading state
+  const [uploading, setUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  
-  const handleCloseAdd = async () => {
-    handleClose()
-    formik.resetForm();
-    setCroppingImage(null)
-    setCroppingImageName(null)
-    setImages([])
-    setNewImages([])
-    try {
-      await Promise.all(newImages.map(async (imageName) => {
-        const response = await axios.delete(`http://${process.env.REACT_APP_LOCAL_IP_ADDRESS}:${process.env.REACT_APP_LOCAL_PORT}/product/image/${imageName}`);
-        if (response.data.error) {
-          console.error(`Error deleting image ${imageName}: ${response.data.error}`);
-        }
-      }));
-    } catch (error) {
-      console.error('Error deleting images:', error);
-    }
+  const [fileExtensionName, setFileExtensionName] = useState("");
 
-  }
   useEffect(() => {
-    if(open){
-      axios.get(`http://${process.env.REACT_APP_LOCAL_IP_ADDRESS}:${process.env.REACT_APP_LOCAL_PORT}/product/${editId}`)
-        .then((response) => {
-          if (response.data.error) {
-            console.error(response.data.error);
-          } else {
-            formik.values.title = response.data.title
-            formik.values.reference = response.data.reference
-            formik.values.price = response.data.price
-            formik.values.quantity = response.data.quantity
-            formik.values.description = response.data.description
-          }
-        })
-        .catch((error) => {
-          console.error(error);
+    if (open===true) {
+      axios.get(`${process.env.REACT_APP_IP_ADDRESS}/articles/${editId}`, {
+        headers: {
+          accessToken: localStorage.getItem("accessToken"),
+          apikey: process.env.REACT_APP_API_KEY,
+        },
+      })
+      .then((response) => {
+        setInitialValues(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching article data:", error);
+        setErrorMessage(error.message);
+        handleMessage(error.message);
+        handleMessageShow(true);
       });
-
-     
-
-      
-      
-      axios.get(`http://${process.env.REACT_APP_LOCAL_IP_ADDRESS}:${process.env.REACT_APP_LOCAL_PORT}/product/images/${editId}`)
-        .then((response) => {
-          if (response.data.error) {
-            console.error(response.data.error);
-          } else {
-            setImages(response.data.imagePaths);
-          }
-        })
-        .catch((error) => {
-          console.error(error);
-      });  
     }
-    // eslint-disable-next-line
-  }, [open]);
+  }, [editId, handleMessage, handleMessageShow]);
 
- 
+  const handleCloseEdit = () => {
+    handleClose();
+    formik.resetForm();
+    setCroppingImage(null);
+    setCroppingImageUrl(null);
+    setCroppedImageUrl(null);
+  };
 
   const handleFileUpload = (event) => {
     const { files } = event.target;
     if (files.length > 0) {
       const file = files[0];
-      const validExtensions = ['jpg', 'jpeg', 'png', 'bmp', 'webp'];
+      const validExtensions = ['jpg', 'jpeg', 'png', 'bmp', 'webp', 'svg'];
       const fileExtension = file.name.split('.').pop().toLowerCase();
-  
+
       if (!validExtensions.includes(fileExtension)) {
-        setOpenSnackbar(true)
-        setErrorMessage("Type de fichier invalide")
+        setOpenSnackbar(true);
+        setErrorMessage("Invalid file type");
         return;
       }
-      if (images.some(element => element === file.name)) {
-        setOpenSnackbar(true)
-        setErrorMessage("Cette image a été deja ajouter")
-        return;
-      }
-  
-      setCroppingImage(URL.createObjectURL(file));
-      setCroppingImageName(file.name);
+
+      setFileExtensionName(fileExtension);
+      setCroppingImage(file);
+      setCroppingImageUrl(URL.createObjectURL(file));
+      setCroppedImageUrl(null);
     }
   };
 
-  const handleCrop = async () => {
+  const handleCrop = () => {
     if (cropper) {
-      setUploading(true); // Set uploading state to true when cropping starts
-      cropper.getCroppedCanvas().toBlob(async (blob) => {
-        try {
-          const formData = new FormData();
-          formData.append('image', blob); // Append the cropped image blob to the form data
-          // Send the cropped image to the server
-          const response = await axios.post(`http://${process.env.REACT_APP_LOCAL_IP_ADDRESS}:${process.env.REACT_APP_LOCAL_PORT}/product/upload/${croppingImageName}`, formData);
-  
-          if (response.data.success) {
-            // Append the uploaded image file object to the images state
-            setImages((prevImages) => [...prevImages, response.data.fileName]);
-            setNewImages((prevImages) => [...prevImages, response.data.fileName]);
-            setCroppingImage(null);
-          } else {
-            setOpenSnackbar(true)
-            setErrorMessage(response.data.error)
-            setCroppingImage(null);
-            setUploading(false);
-          }
-        } catch (error) {
-          console.error(error);
-          setOpenSnackbar(true)
-          setErrorMessage(error)
-        } finally {
-          setUploading(false); // Set uploading state to false when cropping ends
-        }
+      setUploading(true);
+      cropper.getCroppedCanvas().toBlob((blob) => {
+        const croppedUrl = URL.createObjectURL(blob);
+        setCroppedImageUrl(croppedUrl);
+        setCroppingImage(blob);
+        setCroppingImageUrl(null); // Hide the Cropper component
+        setUploading(false);
       });
     }
   };
 
   const formik = useFormik({
-    initialValues: {
-      reference: '',
-      title: '',
-      price: '',
-      quantity: '',
-      description: '',
-    },
+    enableReinitialize: true,
+    initialValues,
     validationSchema,
     onSubmit: async (values) => {
-      
-      
+      let imageUrl = initialValues.path;
 
       try {
+        if (croppingImage) {
+          const formData = new FormData();
+          formData.append('image', croppingImage, `image.${fileExtensionName}`);
 
-        const response = await axios.put(`http://${process.env.REACT_APP_LOCAL_IP_ADDRESS}:${process.env.REACT_APP_LOCAL_PORT}/product`, { values, images, id: editId});
-        if (response.data.error) {
-          console.error(response.data.error);
-          formik.resetForm();
-          setCroppingImage(null)
-          setImages([])
-          handleMessage(response.data)
-          handleMessageShow(true)
-          handleClose();
-        } else {
-          formik.resetForm();
-          setCroppingImage(null)
-          setImages([])
-          handleMessage(response.data)
-          handleMessageShow(true)
-          handleClose();
+          console.log("Uploading image to image service...");
+          const imageUploadResponse = await axios.post('http://localhost:5010/api/uploads', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              accessToken: localStorage.getItem("accessToken"),
+            },
+          });
+
+          console.log("Image upload response:", imageUploadResponse.data);
+          if (imageUploadResponse.data.error) {
+            throw new Error(imageUploadResponse.data.error);
+          }
+
+          imageUrl = imageUploadResponse.data.path;
         }
       } catch (error) {
-        console.error(error);
+        console.error("Error uploading image:", error);
+        setErrorMessage(error.message);
+        handleMessage(error.message);
+        handleMessageShow(true);
+        handleClose();
+        return;
+      }
+
+      try {
+        const articleData = {
+          name: values.name,
+          category: values.category,
+          price: values.price,
+          path: imageUrl,
+        };
+
+        console.log("Updating article with data:", articleData);
+        const articleResponse = await axios.put(`${process.env.REACT_APP_IP_ADDRESS}/articles/${editId}`, articleData, {
+          headers: {
+            accessToken: localStorage.getItem("accessToken"),
+            apikey: process.env.REACT_APP_API_KEY,
+          },
+        });
+
+        console.log("Article response:", articleResponse.data);
+        if (articleResponse.data.error) {
+          throw new Error(articleResponse.data.error);
+        }
+        const imageDeleteResponse = await axios.delete(`http://localhost:5010/api/uploads/${initialValues.path}`);
+        console.log(imageDeleteResponse)
         formik.resetForm();
-        setCroppingImage(null)
-        setImages([])
-        handleMessage(error)
-        handleMessageShow(true)
+        setCroppingImage(null);
+        setCroppedImageUrl(null);
+        handleMessage(articleResponse.data);
+        handleMessageShow(true);
+        handleClose();
+
+      } catch (error) {
+        console.error("Error updating article:", error);
+        setErrorMessage(error.message);
+        handleMessage(error.message);
+        handleMessageShow(true);
         handleClose();
       }
     }
-    
   });
-  const deleteImage = async (path) => {
-    try{
-      const response = await axios.delete(`http://${process.env.REACT_APP_LOCAL_IP_ADDRESS}:${process.env.REACT_APP_LOCAL_PORT}/product/image/${path}`);
-      if (response.data.message) {
-        setImages(prevImages => prevImages.filter(image => image !== path));
-        handleMessage(response.data)
-        handleMessageShow(true)
-      } 
-    } catch (error) {
-        console.error(error);
-        handleMessage(error)
-        handleMessageShow(true)
-      }
-    
-    
-  }
 
   return (
     <Dialog
@@ -256,17 +218,17 @@ export default function ProductEdit({ open, handleClose, handleMessage, handleMe
     >
       <AppBar color="inherit" sx={{ position: 'relative' }}>
         <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={handleCloseAdd} aria-label="close">
+          <IconButton edge="start" color="inherit" onClick={handleCloseEdit} aria-label="close">
             <CloseIcon />
           </IconButton>
           <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-            Modifier le produit N°{editId}
+            Edit an Article
           </Typography>
-          <Button autoFocus sx={{ mr: 2 }} variant='contained' color="inherit" onClick={handleCloseAdd}>
-            Annuler
+          <Button autoFocus sx={{ mr: 2 }} variant='contained' color="inherit" onClick={handleCloseEdit}>
+            Cancel
           </Button>
           <Button type="submit" autoFocus variant='contained' color="primary" onClick={formik.handleSubmit}>
-            Sauvegarder
+            Save
           </Button>
         </Toolbar>
       </AppBar>
@@ -277,32 +239,32 @@ export default function ProductEdit({ open, handleClose, handleMessage, handleMe
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
                 <TextField
-                  name="reference"
-                  label="Reference"
+                  name="name"
+                  label="Name"
                   fullWidth
-                  value={formik.values.reference}
+                  value={formik.values.name}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  error={formik.touched.reference && Boolean(formik.errors.reference)}
-                  helperText={formik.touched.reference && formik.errors.reference}
+                  error={formik.touched.name && Boolean(formik.errors.name)}
+                  helperText={formik.touched.name && formik.errors.name}
                 />
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
-                  name="title"
-                  label="Titre"
+                  name="category"
+                  label="Category"
                   fullWidth
-                  value={formik.values.title}
+                  value={formik.values.category}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  error={formik.touched.title && Boolean(formik.errors.title)}
-                  helperText={formik.touched.title && formik.errors.title}
+                  error={formik.touched.category && Boolean(formik.errors.category)}
+                  helperText={formik.touched.category && formik.errors.category}
                 />
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
                   name="price"
-                  label="Prix"
+                  label="Price"
                   type="number"
                   fullWidth
                   value={formik.values.price}
@@ -312,134 +274,82 @@ export default function ProductEdit({ open, handleClose, handleMessage, handleMe
                   helperText={formik.touched.price && formik.errors.price}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  name="quantity"
-                  label="Quantité"
-                  type="number"
-                  fullWidth
-                  value={formik.values.quantity}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.quantity && Boolean(formik.errors.quantity)}
-                  helperText={formik.touched.quantity && formik.errors.quantity}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  name="description"
-                  label="Description"
-                  fullWidth
-                  multiline
-                  rows={4}
-                  value={formik.values.description}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.description && Boolean(formik.errors.description)}
-                  helperText={formik.touched.description && formik.errors.description}
-                />
-              </Grid>
-             
+              {!croppingImageUrl && !croppedImageUrl && (
+                <Box>
+                  <Button
+                    sx={{ mt: 2 }}
+                    component="label"
+                    role={undefined}
+                    variant="contained"
+                    tabIndex={-1}
+                    startIcon={<CloudUploadIcon />}
+                  >
+                    {initialValues.path ? "Change Image" : "Upload Image"}
+                    <VisuallyHiddenInput accept=".jpg,.jpeg,.png,.bmp,.webp,.svg" type="file" name="image" onChange={handleFileUpload} />
+                  </Button>
+                  {initialValues.path && (
+                    <Box sx={{ mt: 2 }}>
+                      <img src={`http://localhost:5010/uploads/${initialValues.path}`} alt="Article" style={{ width: '100%' }} />
+                    </Box>
+                  )}
+                </Box>
+              )}
+              {croppingImageUrl && (
+                <Box sx={{ mt: 2 }}>
+                  {uploading ? (
+                    <LoadingButton sx={{ mr: 1, mb: 1 }} loading variant="contained" color="primary">
+                      Crop
+                    </LoadingButton>
+                  ) : (
+                    <Button sx={{ mr: 1, mb: 1 }} onClick={handleCrop} variant="contained" color="primary">
+                      Crop
+                    </Button>
+                  )}
+                  <Button sx={{ mb: 1 }} onClick={() => { setCroppingImage(null); setCroppingImageUrl(null); }} variant="contained" color="inherit">
+                    Cancel
+                  </Button>
+                  <Cropper
+                    src={croppingImageUrl}
+                    style={{ height: 400, width: '100%' }}
+                    initialAspectRatio={1}
+                    aspectRatio={1}
+                    guides={false}
+                    viewMode={1}
+                    minCropBoxHeight={10}
+                    minCropBoxWidth={10}
+                    background={false}
+                    responsive={Boolean(true)}
+                    autoCropArea={1}
+                    checkOrientation={false}
+                    onInitialized={(instance) => {
+                      setCropper(instance);
+                    }}
+                  />
+                </Box>
+              )}
+              {croppedImageUrl && (
+                <Box sx={{ mt: 2 }}>
+                  <img src={croppedImageUrl} alt="Cropped" style={{ width: '100%' }} />
+                  <Button sx={{ mt: 2 }} onClick={() => { setCroppedImageUrl(null); setCroppingImageUrl(null); }} variant="contained" color="inherit">
+                    Change Image
+                  </Button>
+                </Box>
+              )}
             </Grid>
-            {!croppingImage && (
-              <Box>
-                <Button
-                  sx={{mt: 2}}
-                  component="label"
-                  role={undefined}
-                  variant="contained"
-                  tabIndex={-1}
-                  startIcon={<CloudUploadIcon />}
-                >
-                  Upload Files
-                  <VisuallyHiddenInput accept=".jpg,.jpeg,.png,.bmp,.webp"  type="file" name="images" onChange={handleFileUpload} multiple />
-                </Button>
-                {images.length > 0 && (
-                  <ImageList sx={{ width: '100%', height: '100%',mt: 2 }} variant="masonry" cols={3}>
-                  {images.map((file, index) => (
-                    <ImageListItem key={index} sx={{ display: 'flex'}}>
-                      <img src={`http://${process.env.REACT_APP_LOCAL_IP_ADDRESS}:${process.env.REACT_APP_LOCAL_PORT}/thumbnail/${file}`} alt={`Uploaded ${index}`} />
-                      <ImageListItemBar
-              sx={{
-                background:
-                  'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, ' +
-                  'rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
-              }}
-              title={file}
-              position="top"
-              actionIcon={
-                <IconButton
-                  color='error'
-                  onClick={() => {deleteImage(file)}}
-                >
-                  <DeleteOutline />
-                </IconButton>
-              }
-              actionPosition="left"
-            />
-                    </ImageListItem>
-                    
-                  ))}
-                </ImageList>
-                )}
-              </Box>
-            
-            )}
-            {/* Display LinearProgress while uploading */}
-            
-            {/* Cropper Component */}
-            {croppingImage && (
-              <Box sx={{mt: 2}}>
-                {uploading ?
-                <LoadingButton sx={{mr: 1,mb: 1}} loading  variant="contained" color="primary">
-                Crop
-                
-                </LoadingButton>
-                :
-                <Button sx={{mr: 1,mb: 1}} onClick={handleCrop} variant="contained" color="primary">
-                Crop
-                
-                </Button> 
-                }
-                <Button sx={{mb: 1}} onClick={() => {setCroppingImage(null)}} variant="contained" color="inherit">
-                Annuler
-                
-                </Button>
-                <Cropper
-                  src={croppingImage}
-                  style={{ height: 400, width: '100%' }}
-                  initialAspectRatio={1}
-                  aspectRatio={1}
-                  guides={false}
-                  viewMode={1}
-                  minCropBoxHeight={10}
-                  minCropBoxWidth={10}
-                  background={false}
-                  responsive={Boolean(true)}
-                  autoCropArea={1}
-                  checkOrientation={false}
-                  onInitialized={(instance) => {
-                    setCropper(instance);
-                  }}
-                />
-                
-              </Box>
-            )}
-            {/* Display ImageList after successful upload */}
-            
           </form>
         </Container>
       </DialogContent>
-      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={()=> {setOpenSnackbar(false)}}>
-  <Alert
-    onClose={()=> {setOpenSnackbar(false)}}
-    severity="error"
-    variant="filled"
-    sx={{ width: '100%' }}
-  >
-    {errorMessage}
-  </Alert>
-</Snackbar>
+
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => { setOpenSnackbar(false); }}>
+        <Alert
+          onClose={() => { setOpenSnackbar(false); }}
+          severity="error"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 }

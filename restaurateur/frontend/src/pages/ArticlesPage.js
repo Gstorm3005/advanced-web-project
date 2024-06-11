@@ -36,7 +36,6 @@ const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
   { id: 'category', label: 'Category', alignRight: false },
   { id: 'price', label: 'Price', alignRight: false },
-  { id: 'quantity', label: 'Quantity', alignRight: false },
   { id: '' },
 ];
 
@@ -57,7 +56,6 @@ export default function ProductPage() {
   const [message, setMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("error");
-
   const handleCloseAdd = () => {
     setOpenAdd(false);
   };
@@ -72,13 +70,15 @@ export default function ProductPage() {
     setOpenEdit(false);
   };
 
-  const handleOpenMenu = (event) => {
+  const handleOpenMenu = (event, id) => {
     setOpen(event.currentTarget);
+    setEditId(id);  // Set the id of the item to be edited or deleted
     setSelected([]);
   };
 
   const handleCloseMenu = () => {
     setOpen(null);
+    setEditId(null);  // Reset the id of the item to be edited or deleted
   };
 
   const handleRequestSort = (event, property) => {
@@ -186,35 +186,48 @@ export default function ProductPage() {
   });
 
   const handleDelete = () => {
-    let list;
-    if (selected.length !== 0) {
-      list = selected;
-    } else {
-      list = [editId];
-    }
-    axios
-      .delete(`http://${process.env.REACT_APP_LOCAL_IP_ADDRESS}:${process.env.REACT_APP_LOCAL_PORT}/articles`, { data: { list } })
-      .then((response) => {
-        if (response.data.error) {
-          setMessage(response.data.error);
+    if (editId) {
+      axios
+        .delete(`${process.env.REACT_APP_IP_ADDRESS}/articles/${editId}`, {
+          headers: {
+            accessToken: localStorage.getItem("accessToken"),
+            apikey: process.env.REACT_APP_API_KEY,
+          },
+        })
+        .then((response) => {
+          if (response.data.error) {
+            setMessage(response.data.error);
+            setOpenSnackbar(true);
+            setSnackbarSeverity("error");
+          } else {
+            setMessage(response.data.message);
+            setOpenSnackbar(true);
+            setSnackbarSeverity("success");
+            setProducts(products.filter((product) => product._id !== editId));
+            const deletePath = response.data.path;
+            handleCloseMenu();
+            setSelected([]);
+            // Now send a request to delete the image
+            axios
+              .delete(`http://localhost:5010/api/uploads/${deletePath}`)
+              .then((imageResponse) => {
+                console.log('Image deleted:', imageResponse.data);
+              })
+              .catch((imageError) => {
+                console.error('Error deleting image:', imageError);
+                // Optionally, you can handle image deletion error here
+              });
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          setMessage(error.message);
           setOpenSnackbar(true);
           setSnackbarSeverity("error");
-        } else {
-          setMessage(response.data.message);
-          setOpenSnackbar(true);
-          setSnackbarSeverity("success");
-          setProducts(products.filter((product) => !list.includes(product._id)));
-          handleCloseMenu();
-          setSelected([]);
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-        setMessage(error);
-        setOpenSnackbar(true);
-        setSnackbarSeverity("error");
-      });
+        });
+    }
   };
+  
 
   const isNotFound = !filteredProducts.length && !!filterTitle;
 
@@ -227,10 +240,10 @@ export default function ProductPage() {
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
-            Products
+            Articles
           </Typography>
           <Button onClick={() => setOpenAdd(true)} variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            New Product
+            New Article
           </Button>
           <ProductAdd open={openAdd} handleClose={handleCloseAdd} handleMessage={handleMessage} handleMessageShow={handleMessageShow} />
         </Stack>
@@ -259,11 +272,11 @@ export default function ProductPage() {
                   {sortedProducts
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((product) => {
-                      const { _id, name, category, price, quantity, path } = product;
+                      const { _id, name, category, price, path } = product;
                       const selectedProduct = selected.indexOf(_id) !== -1;
 
                       return (
-                        <TableRow hover key={_id} tabIndex={-1} role="checkbox" onClick={() => { setEditId(_id); }} selected={selectedProduct}>
+                        <TableRow hover key={_id} tabIndex={-1} role="checkbox" selected={selectedProduct}>
                           <TableCell padding="checkbox">
                             <Checkbox checked={selectedProduct} onChange={(event) => handleClick(event, _id)} />
                           </TableCell>
@@ -281,10 +294,9 @@ export default function ProductPage() {
 
                           <TableCell align="left">{price}</TableCell>
 
-                          <TableCell align="left">{quantity}</TableCell>
 
                           <TableCell align="right">
-                            <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                            <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, _id)}>
                               <Iconify icon={'eva:more-vertical-fill'} />
                             </IconButton>
                           </TableCell>

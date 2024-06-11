@@ -13,7 +13,6 @@ import {
   Container,
   Grid,
   Box,
-  Alert,
   Snackbar
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -53,7 +52,6 @@ const validationSchema = Yup.object({
   name: Yup.string().required('Name is required'),
   category: Yup.string().required('Category is required'),
   price: Yup.number().required('Price is required').positive('Price must be positive'),
-  quantity: Yup.number().required('Quantity is required').min(1, 'Quantity must be at least 1'),
 });
 
 export default function ProductAdd({ open, handleClose, handleMessage, handleMessageShow }) {
@@ -64,6 +62,7 @@ export default function ProductAdd({ open, handleClose, handleMessage, handleMes
   const [uploading, setUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [fileExtensionName, setFileExtensionName] = useState("");
 
   const handleCloseAdd = () => {
     handleClose();
@@ -86,6 +85,7 @@ export default function ProductAdd({ open, handleClose, handleMessage, handleMes
         return;
       }
 
+      setFileExtensionName(fileExtension);
       setCroppingImage(file);
       setCroppingImageUrl(URL.createObjectURL(file));
       setCroppedImageUrl(null);
@@ -110,42 +110,58 @@ export default function ProductAdd({ open, handleClose, handleMessage, handleMes
       name: '',
       category: '',
       price: '',
-      quantity: '',
     },
     validationSchema,
     onSubmit: async (values) => {
       try {
-        const formData = new FormData();
-        formData.append('name', values.name);
-        formData.append('category', values.category);
-        formData.append('price', values.price);
-        formData.append('quantity', values.quantity);
-        formData.append('image', croppingImage);
+        console.log("Submitting form...");
 
-        const response = await axios.post(`${process.env.REACT_APP_IP_ADDRESS}/articles`, formData, {
+        const formData = new FormData();
+        formData.append('image', croppingImage, `image.${fileExtensionName}`);
+
+        console.log("Uploading image to image service...");
+        const imageUploadResponse = await axios.post('http://localhost:5010/api/uploads', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        console.log("Image upload response:", imageUploadResponse.data);
+        if (imageUploadResponse.data.error) {
+          throw new Error(imageUploadResponse.data.error);
+        }
+
+        const imageUrl = imageUploadResponse.data.path;
+
+        const articleData = {
+          name: values.name,
+          category: values.category,
+          price: values.price,
+          path: imageUrl,
+        };
+
+        console.log("Creating article with data:", articleData);
+        const articleResponse = await axios.post(`http://localhost:5000/restaurateur/api/articles`, articleData, {
+          headers: {
             accessToken: localStorage.getItem("accessToken"),
             apikey: process.env.REACT_APP_API_KEY,
           },
         });
 
-        if (response.data.error) {
-          console.error(response.data.error);
-          setErrorMessage(response.data.error);
-          handleMessage(response.data);
-          handleMessageShow(true);
-          handleClose();
-        } else {
-          formik.resetForm();
-          setCroppingImage(null);
-          setCroppedImageUrl(null);
-          handleMessage(response.data);
-          handleMessageShow(true);
-          handleClose();
+        console.log("Article response:", articleResponse.data);
+        if (articleResponse.data.error) {
+          throw new Error(articleResponse.data.error);
         }
+
+        formik.resetForm();
+        setCroppingImage(null);
+        setCroppedImageUrl(null);
+        handleMessage(articleResponse.data);
+        handleMessageShow(true);
+        handleClose();
+
       } catch (error) {
-        console.error(error);
+        console.error("Error submitting form:", error);
         setErrorMessage(error.message);
         handleMessage(error.message);
         handleMessageShow(true);
@@ -153,7 +169,7 @@ export default function ProductAdd({ open, handleClose, handleMessage, handleMes
       }
     }
   });
-
+  
   return (
     <Dialog
       fullScreen
@@ -218,19 +234,6 @@ export default function ProductAdd({ open, handleClose, handleMessage, handleMes
                   onBlur={formik.handleBlur}
                   error={formik.touched.price && Boolean(formik.errors.price)}
                   helperText={formik.touched.price && formik.errors.price}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  name="quantity"
-                  label="Quantity"
-                  type="number"
-                  fullWidth
-                  value={formik.values.quantity}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.quantity && Boolean(formik.errors.quantity)}
-                  helperText={formik.touched.quantity && formik.errors.quantity}
                 />
               </Grid>
               {!croppingImageUrl && !croppedImageUrl && (

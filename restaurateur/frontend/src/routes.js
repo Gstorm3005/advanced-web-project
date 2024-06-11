@@ -13,6 +13,9 @@ import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import ArticlesPage from "./pages/ArticlesPage"
+import MenusPage from './pages/MenusPage';
+import OrdersPage from './pages/OrdersPage';
+
 
 // ----------------------------------------------------------------------
 
@@ -30,6 +33,8 @@ export default function Router() {
         { path: 'user', element: <UserPage /> },
         { path: 'products', element: <ProductsPage /> },
         { path: 'articles', element: <ArticlesPage /> },
+        { path: 'menus', element: <MenusPage /> },
+        { path: 'orders', element: <OrdersPage /> },
         { path: 'blog', element: <BlogPage /> },
       ],
     },

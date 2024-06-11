@@ -28,7 +28,7 @@ export default function App() {
       }
   });
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/check`, { headers: { accessToken: localStorage.getItem("accessToken"), apikey: process.env.REACT_APP_API_KEY } }).then((response) => {
+    axios.get(`http://localhost:5000/auth/api/check`, { headers: { accessToken: localStorage.getItem("accessToken"), apikey: process.env.REACT_APP_API_KEY, role: "restaurateur" } }).then((response) => {
       if (response.data.error) {
         setAuthState({ 
           isAuthenticated: false,

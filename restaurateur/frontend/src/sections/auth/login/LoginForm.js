@@ -26,7 +26,7 @@ export default function LoginForm() {
     if (e) {
         e.preventDefault();
     }
-    axios.post(`${process.env.REACT_APP_IP_ADDRESS}/login`, {email,password},{headers: { apikey: process.env.REACT_APP_API_KEY }}).then((response) => {
+    axios.post(`http://localhost:5000/auth/api/login`, {email,password},{headers: { apikey: process.env.REACT_APP_API_KEY, role: "restaurateur" }}).then((response) => {
       console.log("gfdgs")
       if (response.data.error) {
         setServerError(response.data.error);

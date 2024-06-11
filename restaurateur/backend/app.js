@@ -1,6 +1,5 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 const db = require("./SQLmodels");
 const verifyMicroserviceApiKey = require('./middlewares/verifyMicroserviceApiKey'); // Import the middleware
 
@@ -24,7 +23,7 @@ db.sequelize.sync()
 .then(() => console.log('MySQL connected...'))
 .catch(err => console.log(err));
 
-app.use(bodyParser.json())
+app.use(express.json())
 
 // Apply the middleware to all routes
 app.use(verifyMicroserviceApiKey);
