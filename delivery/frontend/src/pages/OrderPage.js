@@ -34,9 +34,12 @@ import USERLIST from '../_mock/user';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'Client_adress', label: 'Client Adress', alignRight: false },
+  { id: 'Date', label: 'Date', alignRight: false },
   { id: 'Restaurant_adress', label: 'Restaurant Adress', alignRight: false },
+  { id: 'Client_adress', label: 'Client Adress', alignRight: false },
+  { id: 'article_count', label: 'N° Article', alignRight: false },
   { id: 'status', label: 'Status', alignRight: false },
+  { id: '' },
 ];
 
 // ----------------------------------------------------------------------
@@ -149,7 +152,7 @@ export default function UserPage() {
         <title> User | Minimal UI </title>
       </Helmet>
 
-      <Container>
+      <Container >
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
             Orders
@@ -184,9 +187,11 @@ export default function UserPage() {
 
                         <TableCell align="left">{company}</TableCell>
 
-                        <TableCell align="left">{role}</TableCell>
+                        <TableCell align="left">{company}</TableCell>
 
-                        
+                        <TableCell align="left">{company}</TableCell>
+
+                        <TableCell align="left">{role}</TableCell>
 
                         <TableCell align="left">
                           <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>

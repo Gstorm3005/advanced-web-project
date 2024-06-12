@@ -23,7 +23,7 @@ const navConfig = [
   },
   {
     title: 'My Deliveries',
-    path: '/dashboard/products',
+    path: '/dashboard/delivery',
     icon: icon('ic_cart'),
   },
   {
