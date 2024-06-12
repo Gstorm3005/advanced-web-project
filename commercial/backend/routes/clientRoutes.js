@@ -7,5 +7,7 @@ router.get('/', clientController.getClients);
 router.get('/:id', clientController.getClientById);
 router.put('/:id', clientController.updateClient);
 router.delete('/:id', clientController.deleteClient);
+router.patch('/suspend/:id', clientController.suspendClient);
+
 
 module.exports = router;
