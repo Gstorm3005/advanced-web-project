@@ -51,7 +51,6 @@ app.use(cors({
 
 // API verification middleware
 app.use((req, res, next) => {
-    console.log(req.body)
     const apiKey = req.headers.apikey;  // Header keys are case-insensitive, but typically lowercase is used
     if (!apiKey) {
         return res.status(401).json({ error: 'API key is missing' });

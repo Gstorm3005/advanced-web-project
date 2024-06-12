@@ -49,19 +49,7 @@ app.use(cors({
 app.use(express.json());
 
 // API verification middleware
-app.use((req, res, next) => {
-    const apiKey = req.headers.apikey;  // Header keys are case-insensitive, but typically lowercase is used
-    if (!apiKey) {
-        return res.status(401).json({ error: 'API key is missing' });
-    }
 
-    // Replace this with your actual API key verification logic
-    if (apiKey === process.env.API_KEY) {
-        next();
-    } else {
-        res.status(403).json({ error: 'Invalid API key' });
-    }
-});
 
 // // Logging middleware
 // app.use((req, res, next) => {
@@ -71,7 +59,7 @@ app.use((req, res, next) => {
 
 // // Public routes (login and signup)
 app.use("/api", loginRoutes);
-
+app.use("/api/user", userRoutes);
 // // Authentication middleware for protected routes
 // const userPath = ['/enduser/api/users', '/restaurateur/api/users', '/delivery/api/users', '/developer/api/users', '/commercial/api/users', '/technical/api/users'];
 // userPath.forEach(path => {

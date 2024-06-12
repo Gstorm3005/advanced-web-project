@@ -1,21 +1,42 @@
 const { users } = require('../SQLmodels');
+const Restaurateur = require('../models/Restaurateur');
+const Client = require('../models/Client');
+const Delivery = require('../models/Delivery');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 require('dotenv').config(); // Ensure you have dotenv configured
+const crypto = require('crypto');
 
 const saltRounds = 10;
 
 exports.signup = async (req, res) => {
     try {
         const role = req.headers.role; // Extract the role from the URL
-        const { first_name, last_name, phone, email, password, state } = req.body;
-
+        const { first_name, last_name, phone, email, password, state, address } = req.body;
+        const randomHash = crypto.randomBytes(12).toString('base64').slice(0, 12)
+        
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         // Create the user
         const user = await users.create({ first_name, last_name, phone, email, password: hashedPassword, role, state });
-        res.status(201).json({ message: 'User created successfully', user });
+            
+        let account;
+        switch (role) {
+            case 'restaurateur':
+                account = new Restaurateur({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: "none", address });
+                break;
+            case 'enduser':
+                account = new Client({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: "none", address });
+                break;
+            case 'delivery':
+                account = new Delivery({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: "none" });
+                break;
+            
+        }
+        account.save()
+        
+        res.status(201).json({ message: 'User created successfully',randomHash });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -54,7 +75,7 @@ exports.login = async (req, res) => {
             // Send the response
             res.status(200).json({ message: 'Login successful', accessToken, userInfo: user });
         } else {
-            res.status(401).json({ error: 'Invalid email, password, or role' });
+            res.json({ error: 'Invalid email, password, or role' });
         }
     } catch (error) {
         res.status(500).json({ error: error.message });

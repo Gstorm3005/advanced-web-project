@@ -15,7 +15,7 @@ import DashboardAppPage from './pages/DashboardAppPage';
 import ArticlesPage from "./pages/ArticlesPage"
 import MenusPage from './pages/MenusPage';
 import OrdersPage from './pages/OrdersPage';
-
+import ProfilePage from './pages/ProfilePage';
 
 // ----------------------------------------------------------------------
 
@@ -30,6 +30,7 @@ export default function Router() {
       children: [
         { element: <Navigate to="/dashboard/app" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
+        { path: 'profile', element: <ProfilePage /> },
         { path: 'user', element: <UserPage /> },
         { path: 'products', element: <ProductsPage /> },
         { path: 'articles', element: <ArticlesPage /> },

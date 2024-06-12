@@ -1,49 +1,49 @@
-const NotifLivreur = require('../models/NotifLivreur');
+const NotifDelivery = require('../models/NotifDelivery');
 
-exports.createNotifLivreur = async (req, res) => {
+exports.createNotifDelivery = async (req, res) => {
   try {
-    const notifLivreur = new NotifLivreur(req.body);
-    await notifLivreur.save();
-    res.status(201).json(notifLivreur);
+    const notifDelivery = new NotifDelivery(req.body);
+    await notifDelivery.save();
+    res.status(201).json(notifDelivery);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-exports.getNotifLivreurs = async (req, res) => {
+exports.getNotifDeliverys = async (req, res) => {
   try {
-    const notifLivreurs = await NotifLivreur.find().populate('Livreur').populate('Commande');
-    res.status(200).json(notifLivreurs);
+    const notifDeliverys = await NotifDelivery.find().populate('Livreur').populate('Commande');
+    res.status(200).json(notifDeliverys);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-exports.getNotifLivreurById = async (req, res) => {
+exports.getNotifDeliveryById = async (req, res) => {
   try {
-    const notifLivreur = await NotifLivreur.findById(req.params.id).populate('Livreur').populate('Commande');
-    if (!notifLivreur) return res.status(404).json({ error: 'NotifLivreur not found' });
-    res.status(200).json(notifLivreur);
+    const notifDelivery = await NotifDelivery.findById(req.params.id).populate('Livreur').populate('Commande');
+    if (!notifDelivery) return res.status(404).json({ error: 'NotifDelivery not found' });
+    res.status(200).json(notifDelivery);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-exports.updateNotifLivreur = async (req, res) => {
+exports.updateNotifDelivery = async (req, res) => {
   try {
-    const notifLivreur = await NotifLivreur.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!notifLivreur) return res.status(404).json({ error: 'NotifLivreur not found' });
-    res.status(200).json(notifLivreur);
+    const notifDelivery = await NotifDelivery.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!notifDelivery) return res.status(404).json({ error: 'NotifDelivery not found' });
+    res.status(200).json(notifDelivery);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-exports.deleteNotifLivreur = async (req, res) => {
+exports.deleteNotifDelivery = async (req, res) => {
   try {
-    const notifLivreur = await NotifLivreur.findByIdAndDelete(req.params.id);
-    if (!notifLivreur) return res.status(404).json({ error: 'NotifLivreur not found' });
-    res.status(200).json({ message: 'NotifLivreur deleted' });
+    const notifDelivery = await NotifDelivery.findByIdAndDelete(req.params.id);
+    if (!notifDelivery) return res.status(404).json({ error: 'NotifDelivery not found' });
+    res.status(200).json({ message: 'NotifDelivery deleted' });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

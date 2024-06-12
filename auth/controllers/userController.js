@@ -1,48 +1,36 @@
 const { users } = require('../SQLmodels');
-
-exports.create = async (req, res) => {
-    try {
-        const role = req.originalUrl.split('/')[1]; // Extract the role from the URL
-        const { first_name, last_name, phone, email, password, state } = req.body;
-        const user = await users.create({ first_name, last_name, phone, email, password, role, state });
-        res.status(201).json(user);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-exports.findAll = async (req, res) => {
-    try {
-        const user = await users.findAll();
-        res.status(200).json(user);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-exports.findOne = async (req, res) => {
-    try {
-        const user = await users.findByPk(req.params.id);
-        if (user) {
-            res.status(200).json(user);
-        } else {
-            res.status(404).json({ error: 'User not found' });
-        }
-    } catch (error) {
-        res.status500().json({ error: error.message });
-    }
-};
+const Restaurateur = require('../models/Restaurateur');
+const Client = require('../models/Client');
+const Delivery = require('../models/Delivery');
 
 exports.update = async (req, res) => {
     try {
-        const role = req.originalUrl.split('/')[1]; // Extract the role from the URL
-        const { first_name, last_name, phone, email, password, state } = req.body;
-        const [updated] = await users.update({ first_name, last_name, phone, email, password, role, state }, {
-            where: { id: req.params.id }
-        });
-        if (updated) {
-            const updatedUser = await users.findByPk(req.params.id);
-            res.status(200).json(updatedUser);
+        const { first_name, last_name, phone, email, state, address, sponsorship_code_used } = req.body;
+        const usertoUpdate = await users.findByPk(req.params.id);
+        // Update the user details
+        if (usertoUpdate) {
+            if(first_name || last_name || phone || email || state || address){
+                const [updated] = await users.update({ first_name, last_name, phone, email, state }, {
+                    where: { id: req.params.id }
+                });
+            }
+        
+
+            // Update role-specific details
+            switch (usertoUpdate.role) {
+                case 'restaurateur':
+                    await Restaurateur.findOneAndUpdate({ ID_user: req.params.id },{ address, sponsorship_code_used });
+                    break;
+                case 'enduser':
+                    await Client.findOneAndUpdate({ ID_user: req.params.id },{ address, sponsorship_code_used });
+                    break;
+                case 'delivery':
+                    await Delivery.findOneAndUpdate({ ID_user: req.params.id },{ sponsorship_code_used });
+                    break;
+                
+            }
+
+            res.status(200).json({ message: "Edit successful"});
         } else {
             res.status(404).json({ error: 'User not found' });
         }
@@ -51,13 +39,31 @@ exports.update = async (req, res) => {
     }
 };
 
+
 exports.delete = async (req, res) => {
     try {
-        const deleted = await users.destroy({
-            where: { id: req.params.id }
-        });
-        if (deleted) {
-            res.status(204).json({ message: 'User deleted' });
+        const userToDelete = await users.findByPk(req.params.id);
+        
+        if (userToDelete) {
+            // Delete the user from the users table
+            await users.destroy({
+                where: { id: req.params.id }
+            });
+
+            // Delete the associated role-specific record
+            switch (userToDelete.role) {
+                case 'restaurateur':
+                    await Restaurateur.deleteOne({ ID_user: req.params.id });
+                    break;
+                case 'enduser':
+                    await Client.deleteOne({ ID_user: req.params.id });
+                    break;
+                case 'delivery':
+                    await Delivery.deleteOne({ ID_user: req.params.id });
+                    break;
+            }
+
+            res.status(200).json({ message: 'User and associated records deleted' });
         } else {
             res.status(404).json({ error: 'User not found' });
         }

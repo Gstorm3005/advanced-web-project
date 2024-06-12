@@ -8,13 +8,13 @@ const saltRounds = 10;
 exports.signup = async (req, res) => {
     try {
         const role = req.originalUrl.split('/')[1]; // Extract the role from the URL
-        const { first_name, last_name, phone, email, password, state } = req.body;
 
+        const { first_name, last_name, phone, email, password, state } = req.body;
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         // Create the user
-        const user = await users.create({ first_name, last_name, phone, email, password: hashedPassword, role, state });
+        // const user = await users.create({ first_name, last_name, phone, email, password: hashedPassword, role, state });
         res.status(201).json({ message: 'User created successfully', user });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -63,7 +63,6 @@ exports.login = async (req, res) => {
 
 exports.checkAuth = (req, res) => {
     const accessToken = req.header("accessToken") // Get accessToken from the accessToken header
-    console.log("gg",accessToken)
     if (!accessToken) {
         return res.status(401).json({ error: 'Access denied. No accessToken provided.' });
     }
