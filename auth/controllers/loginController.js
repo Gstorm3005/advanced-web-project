@@ -2,6 +2,7 @@ const { users } = require('../SQLmodels');
 const Restaurateur = require('../models/Restaurateur');
 const Client = require('../models/Client');
 const Delivery = require('../models/Delivery');
+const Log = require('../models/Log');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 require('dotenv').config(); // Ensure you have dotenv configured
@@ -35,7 +36,8 @@ exports.signup = async (req, res) => {
             
         }
         account.save()
-        
+        const log = new Log({ value: `A new account with the email: ${email} and the role: ${role} has been created`, type: "authentication"});
+        await log.save();
         res.status(201).json({ message: 'User created successfully',randomHash });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -71,7 +73,8 @@ exports.login = async (req, res) => {
             );
 
             
-
+            const log = new Log({ value: `${email} with the role: ${role} has logged in`, type: "authentication"});
+            await log.save();
             // Send the response
             res.status(200).json({ message: 'Login successful', accessToken, userInfo: user });
         } else {

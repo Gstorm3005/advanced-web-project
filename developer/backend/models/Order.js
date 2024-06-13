@@ -6,11 +6,12 @@ const OrderSchema = new Schema({
   state: { type: String, required: true },
   notif_res: { type: Boolean, required: true },
   notif_cli: { type: Boolean, required: true },
+  notif_del: { type: Boolean, required: true },
   Menu: [{ type: Schema.Types.ObjectId, ref: 'Menu' }],
   Article: [{ type: Schema.Types.ObjectId, ref: 'Article' }],
   Client: { type: Schema.Types.ObjectId, ref: 'Client' },
   Restaurateur: { type: Schema.Types.ObjectId, ref: 'Restaurateur' },
-  Livreur: { type: Schema.Types.ObjectId, ref: 'Livreur' }
+  Delivery: { type: Schema.Types.ObjectId, ref: 'Delivery' }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', OrderSchema);
