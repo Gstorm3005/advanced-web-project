@@ -9,7 +9,7 @@ import useResponsive from '../hooks/useResponsive';
 import Logo from '../components/logo';
 import Iconify from '../components/iconify';
 // sections
-import { LoginForm } from '../sections/auth/login';
+import { SignUpForm } from '../sections/auth/signup';
 
 // ----------------------------------------------------------------------
 
@@ -47,7 +47,7 @@ export default function LoginPage() {
   return (
     <>
       <Helmet>
-        <title> Login | Minimal UI </title>
+        <title> Sign up | Minimal UI </title>
       </Helmet>
 
       <StyledRoot>
@@ -62,7 +62,7 @@ export default function LoginPage() {
         {mdUp && (
           <StyledSection>
             <Typography variant="h3" sx={{ px: 5, mt: 10, mb: 5 }}>
-              Hi, Welcome Back
+              Hi, Create your account !
             </Typography>
             <img src="/assets/illustrations/illustration_login.png" alt="login" />
           </StyledSection>
@@ -71,14 +71,14 @@ export default function LoginPage() {
         <Container maxWidth="sm">
           <StyledContent>
             <Typography variant="h4" gutterBottom>
-              Sign in to Minimal
+              Sign up to Minimal
             </Typography>
 
             <Typography variant="body2" sx={{ mb: 5 }}>
-              Don’t have an account? {''}
-              <Link variant="subtitle2" sx={{ cursor: 'pointer' }} onClick={()=>{navigate("/signup")}} >Get started</Link>
+              You already have an account? {''}
+              <Link variant="subtitle2" sx={{ cursor: 'pointer' }} onClick={()=>{navigate("/login")}} >Sign in</Link>
             </Typography>
-            <LoginForm />
+            <SignUpForm />
           </StyledContent>
         </Container>
       </StyledRoot>

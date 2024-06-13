@@ -16,13 +16,15 @@ import ArticlesPage from "./pages/ArticlesPage"
 import MenusPage from './pages/MenusPage';
 import OrdersPage from './pages/OrdersPage';
 import ProfilePage from './pages/ProfilePage';
+import SignUpPage from './pages/SignUpPage';
 
 // ----------------------------------------------------------------------
 
 export default function Router() {
   const { authState } = useContext(AuthContext);
   const isAuthenticated = authState.isAuthenticated;
-  console.log(authState)
+  console.log(authState);
+  
   const routes = useRoutes([
     {
       path: '/dashboard',
@@ -42,6 +44,10 @@ export default function Router() {
     {
       path: 'login',
       element: isAuthenticated ? <Navigate to="/dashboard/app" /> : <LoginPage />,
+    },
+    {
+      path: 'signup',
+      element: isAuthenticated ? <Navigate to="/dashboard/app" /> : <SignUpPage />,
     },
     {
       element: <SimpleLayout />,

@@ -71,3 +71,32 @@ exports.delete = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.getUserById = async (req, res) => {
+    try {
+        const user = await users.findByPk(req.params.id);
+        
+        if (user) {
+            let roleDetails;
+            switch (user.role) {
+                case 'restaurateur':
+                    roleDetails = await Restaurateur.findOne({ ID_user: req.params.id });
+                    break;
+                case 'enduser':
+                    roleDetails = await Client.findOne({ ID_user: req.params.id });
+                    break;
+                case 'delivery':
+                    roleDetails = await Delivery.findOne({ ID_user: req.params.id });
+                    break;
+                default:
+                    roleDetails = []
+            }
+
+            res.status(200).json({ user, roleDetails });
+        } else {
+            res.status(404).json({ error: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

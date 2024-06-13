@@ -12,25 +12,25 @@ const saltRounds = 10;
 exports.signup = async (req, res) => {
     try {
         const role = req.headers.role; // Extract the role from the URL
-        const { first_name, last_name, phone, email, password, state, address } = req.body;
+        const { first_name, last_name, phone, email, password, address, sponsorship_code_used } = req.body;
         const randomHash = crypto.randomBytes(12).toString('base64').slice(0, 12)
         
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         // Create the user
-        const user = await users.create({ first_name, last_name, phone, email, password: hashedPassword, role, state });
+        const user = await users.create({ first_name, last_name, phone, email, password: hashedPassword, role, state: true });
             
         let account;
         switch (role) {
             case 'restaurateur':
-                account = new Restaurateur({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: "none", address });
+                account = new Restaurateur({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: sponsorship_code_used || 'none', address });
                 break;
             case 'enduser':
-                account = new Client({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: "none", address });
+                account = new Client({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: sponsorship_code_used || 'none', address });
                 break;
             case 'delivery':
-                account = new Delivery({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: "none" });
+                account = new Delivery({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: sponsorship_code_used || 'none' });
                 break;
             
         }

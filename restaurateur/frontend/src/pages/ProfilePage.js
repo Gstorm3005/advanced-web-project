@@ -70,7 +70,7 @@ function ProfilePage() {
             email: userSQL.email || '',
             phone: userSQL.phone || '',
             address: user.address || '',
-            sponsorship_code_used: user.sponsorship_code_used === 'none' ? '' : user.sponsorship_code_used
+            sponsorship_code_used: user.sponsorship_code_used || ''
         },
         validationSchema: Yup.object({
             first_name: Yup.string().required('First name is required'),
@@ -188,6 +188,7 @@ function ProfilePage() {
                             <Grid item lg={6} md={6} sm={12}>
                                 <TextField
                                     fullWidth
+                                    disabled
                                     label="Sponsorship Code Used"
                                     name="sponsorship_code_used"
                                     value={formik.values.sponsorship_code_used}
