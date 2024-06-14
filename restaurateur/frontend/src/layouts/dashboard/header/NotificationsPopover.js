@@ -1,8 +1,7 @@
 import PropTypes from 'prop-types';
-import { set, sub } from 'date-fns';
-import { noCase } from 'change-case';
-import { faker } from '@faker-js/faker';
-import { useState } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 // @mui
 import {
   Box,
@@ -25,63 +24,48 @@ import { fToNow } from '../../../utils/formatTime';
 // components
 import Iconify from '../../../components/iconify';
 import Scrollbar from '../../../components/scrollbar';
+import { AuthContext } from '../../../helpers/AuthContext';
 
 // ----------------------------------------------------------------------
 
-const NOTIFICATIONS = [
-  {
-    id: faker.datatype.uuid(),
-    title: 'Your order is placed',
-    description: 'waiting for shipping',
-    avatar: null,
-    type: 'order_placed',
-    createdAt: set(new Date(), { hours: 10, minutes: 30 }),
-    isUnRead: true,
-  },
-  {
-    id: faker.datatype.uuid(),
-    title: faker.name.fullName(),
-    description: 'answered to your comment on the Minimal',
-    avatar: '/assets/images/avatars/avatar_2.jpg',
-    type: 'friend_interactive',
-    createdAt: sub(new Date(), { hours: 3, minutes: 30 }),
-    isUnRead: true,
-  },
-  {
-    id: faker.datatype.uuid(),
-    title: 'You have new message',
-    description: '5 unread messages',
-    avatar: null,
-    type: 'chat_message',
-    createdAt: sub(new Date(), { days: 1, hours: 3, minutes: 30 }),
-    isUnRead: false,
-  },
-  {
-    id: faker.datatype.uuid(),
-    title: 'You have new mail',
-    description: 'sent from Guido Padberg',
-    avatar: null,
-    type: 'mail',
-    createdAt: sub(new Date(), { days: 2, hours: 3, minutes: 30 }),
-    isUnRead: false,
-  },
-  {
-    id: faker.datatype.uuid(),
-    title: 'Delivery processing',
-    description: 'Your order is being shipped',
-    avatar: null,
-    type: 'order_shipped',
-    createdAt: sub(new Date(), { days: 3, hours: 3, minutes: 30 }),
-    isUnRead: false,
-  },
-];
-
 export default function NotificationsPopover() {
-  const [notifications, setNotifications] = useState(NOTIFICATIONS);
+  const [notifications, setNotifications] = useState([]);
+  const [open, setOpen] = useState(null);
+  const navigate = useNavigate();
+  const { authState } = useContext(AuthContext);
+  const userInfo = authState.userInfo;
+
+  useEffect(() => {
+    const fetchNewOrders = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_IP_ADDRESS}/order/neworder/${userInfo.id}`, {
+          headers: {
+            accessToken: localStorage.getItem('accessToken'),
+            apikey: process.env.REACT_APP_API_KEY,
+          },
+        });
+        if (response.data) {
+          const newNotifications = response.data.map(order => ({
+            id: order._id,
+            title: 'New Order',
+            description: order.Client.address,
+            createdAt: order.createdAt, // This would ideally come from the order creation time
+            isUnRead: order.notif_res,
+          }));
+          setNotifications(newNotifications);
+        }
+      } catch (error) {
+        console.error('Error fetching new orders:', error);
+      }
+    };
+
+    fetchNewOrders();
+    const interval = setInterval(fetchNewOrders, 5000);
+
+    return () => clearInterval(interval);
+  }, [userInfo.id]);
 
   const totalUnRead = notifications.filter((item) => item.isUnRead === true).length;
-
-  const [open, setOpen] = useState(null);
 
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
@@ -91,13 +75,28 @@ export default function NotificationsPopover() {
     setOpen(null);
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications(
-      notifications.map((notification) => ({
-        ...notification,
-        isUnRead: false,
-      }))
-    );
+  const handleMarkAllAsRead = async () => {
+    try {
+      await axios.put(`${process.env.REACT_APP_IP_ADDRESS}/order/notif/${userInfo.id}`, null, {
+        headers: {
+          accessToken: localStorage.getItem('accessToken'),
+          apikey: process.env.REACT_APP_API_KEY,
+        },
+      });
+      setNotifications(
+        notifications.map((notification) => ({
+          ...notification,
+          isUnRead: false,
+        }))
+      );
+    } catch (error) {
+      console.error('Error marking all as read:', error);
+    }
+  };
+
+  const handleViewAll = () => {
+    navigate('/dashboard/orders');
+    handleClose();
   };
 
   return (
@@ -131,7 +130,7 @@ export default function NotificationsPopover() {
           </Box>
 
           {totalUnRead > 0 && (
-            <Tooltip title=" Mark all as read">
+            <Tooltip title="Mark all as read">
               <IconButton color="primary" onClick={handleMarkAllAsRead}>
                 <Iconify icon="eva:done-all-fill" />
               </IconButton>
@@ -150,7 +149,7 @@ export default function NotificationsPopover() {
               </ListSubheader>
             }
           >
-            {notifications.slice(0, 2).map((notification) => (
+            {notifications.filter((notification) => notification.isUnRead).slice(0, 3).map((notification) => (
               <NotificationItem key={notification.id} notification={notification} />
             ))}
           </List>
@@ -163,7 +162,7 @@ export default function NotificationsPopover() {
               </ListSubheader>
             }
           >
-            {notifications.slice(2, 5).map((notification) => (
+            {notifications.filter((notification) => !notification.isUnRead).slice(0, 3).map((notification) => (
               <NotificationItem key={notification.id} notification={notification} />
             ))}
           </List>
@@ -172,7 +171,7 @@ export default function NotificationsPopover() {
         <Divider sx={{ borderStyle: 'dashed' }} />
 
         <Box sx={{ p: 1 }}>
-          <Button fullWidth disableRipple>
+          <Button fullWidth disableRipple onClick={handleViewAll}>
             View All
           </Button>
         </Box>
@@ -185,7 +184,7 @@ export default function NotificationsPopover() {
 
 NotificationItem.propTypes = {
   notification: PropTypes.shape({
-    createdAt: PropTypes.instanceOf(Date),
+    createdAt: PropTypes.string,
     id: PropTypes.string,
     isUnRead: PropTypes.bool,
     title: PropTypes.string,
@@ -240,37 +239,13 @@ function renderContent(notification) {
     <Typography variant="subtitle2">
       {notification.title}
       <Typography component="span" variant="body2" sx={{ color: 'text.secondary' }}>
-        &nbsp; {noCase(notification.description)}
+        &nbsp; {notification.description}
       </Typography>
     </Typography>
   );
 
-  if (notification.type === 'order_placed') {
-    return {
-      avatar: <img alt={notification.title} src="/assets/icons/ic_notification_package.svg" />,
-      title,
-    };
-  }
-  if (notification.type === 'order_shipped') {
-    return {
-      avatar: <img alt={notification.title} src="/assets/icons/ic_notification_shipping.svg" />,
-      title,
-    };
-  }
-  if (notification.type === 'mail') {
-    return {
-      avatar: <img alt={notification.title} src="/assets/icons/ic_notification_mail.svg" />,
-      title,
-    };
-  }
-  if (notification.type === 'chat_message') {
-    return {
-      avatar: <img alt={notification.title} src="/assets/icons/ic_notification_chat.svg" />,
-      title,
-    };
-  }
   return {
-    avatar: notification.avatar ? <img alt={notification.title} src={notification.avatar} /> : null,
+    avatar: <img alt={notification.title} src="/assets/icons/ic_notification_package.svg" />,
     title,
   };
 }

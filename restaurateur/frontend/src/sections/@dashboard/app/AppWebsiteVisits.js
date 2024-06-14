@@ -17,16 +17,16 @@ AppWebsiteVisits.propTypes = {
 export default function AppWebsiteVisits({ title, subheader, chartLabels, chartData, ...other }) {
   const chartOptions = useChart({
     plotOptions: { bar: { columnWidth: '16%' } },
-    fill: { type: chartData.map((i) => i.fill) },
+    fill: { type: 'solid' }, // Ensure fill type is set to 'solid'
     labels: chartLabels,
-    xaxis: { type: 'datetime' },
+    xaxis: { categories: chartLabels }, // Changed from 'datetime' to 'categories'
     tooltip: {
       shared: true,
       intersect: false,
       y: {
         formatter: (y) => {
           if (typeof y !== 'undefined') {
-            return `${y.toFixed(0)} visits`;
+            return `${y.toFixed(2)}% orders`;
           }
           return y;
         },
@@ -39,7 +39,7 @@ export default function AppWebsiteVisits({ title, subheader, chartLabels, chartD
       <CardHeader title={title} subheader={subheader} />
 
       <Box sx={{ p: 3, pb: 1 }} dir="ltr">
-        <ReactApexChart type="line" series={chartData} options={chartOptions} height={364} />
+        <ReactApexChart type="bar" series={chartData} options={chartOptions} height={364} />
       </Box>
     </Card>
   );

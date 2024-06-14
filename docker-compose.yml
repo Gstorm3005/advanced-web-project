@@ -64,6 +64,12 @@ services:
     build: ./technical/frontend
     ports:
       - '3006:3006'
+  image-service:
+    build: ./image-service
+    ports:
+      - '5010:5010'
+    depends_on:
+      - mongo
   gateway:
     build: ./gateway
     ports:
@@ -75,3 +81,4 @@ services:
       - developer-backend
       - commercial-backend
       - technical-backend
+      - image-service

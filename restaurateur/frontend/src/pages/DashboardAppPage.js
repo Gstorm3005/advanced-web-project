@@ -1,11 +1,11 @@
+import { useState, useEffect, useContext } from 'react';
 import { Helmet } from 'react-helmet-async';
+import axios from 'axios';
 import { faker } from '@faker-js/faker';
-// @mui
+
 import { useTheme } from '@mui/material/styles';
 import { Grid, Container, Typography } from '@mui/material';
-// components
 import Iconify from '../components/iconify';
-// sections
 import {
   AppTasks,
   AppNewsUpdate,
@@ -17,11 +17,148 @@ import {
   AppCurrentSubject,
   AppConversionRates,
 } from '../sections/@dashboard/app';
+import { AuthContext } from "../helpers/AuthContext";
 
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
   const theme = useTheme();
+  const { authState } = useContext(AuthContext);
+  const userInfo = authState.userInfo;
+  const [orders, setOrders] = useState([]);
+  const [statistics, setStatistics] = useState({
+    totalSales: 0,
+    totalOrders: 0,
+    totalNewOrders: 0,
+    totalCanceledOrders: 0,
+    totalCompletedOrders: 0,
+    categoryData: [],
+    menuOrders: 0,
+    articleOrders: 0,
+    totalSalesThisMonth: 0,
+    totalSalesThisYear: 0,
+    ordersInProgress: 0,
+    ordersByDayOfWeek: [],
+  });
+  
+
+  useEffect(() => {
+    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/order/restaurateur/${userInfo.id}`, {
+      headers: {
+        accessToken: localStorage.getItem('accessToken'),
+        apikey: process.env.REACT_APP_API_KEY,
+      },
+    })
+    .then((response) => {
+      if (response.data.error) {
+        console.error(response.data.error);
+      } else {
+        const ordersData = response.data;
+        setOrders(ordersData);
+        calculateStatistics(ordersData);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+      // Handle the error, e.g., redirect to an error page or show a relevant message to the user.
+    });
+  }, [userInfo.id]);
+
+  const calculateStatistics = (orders) => {
+    let totalSales = 0;
+    let totalSalesThisMonth = 0;
+    let totalSalesThisYear = 0;
+    const totalOrders = orders.length;
+    let totalNewOrders = 0;
+    let totalCanceledOrders = 0;
+    let totalCompletedOrders = 0;
+    let ordersInProgress = 0;
+    let menuOrders = 0;
+    let articleOrders = 0;
+    const categoryCounts = {};
+    const ordersByDayOfWeek = Array(7).fill(0); // Initialize array to hold orders for each day of the week
+  
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+  
+    orders.forEach(order => {
+      const orderDate = new Date(order.createdAt);
+      const orderMonth = orderDate.getMonth();
+      const orderYear = orderDate.getFullYear();
+      const orderDay = orderDate.getDay(); // Get the day of the week (0-6, where 0 is Sunday)
+  
+      totalSales += order.price;
+  
+      if (orderMonth === currentMonth && orderYear === currentYear) {
+        totalSalesThisMonth += order.price;
+      }
+  
+      if (orderYear === currentYear) {
+        totalSalesThisYear += order.price;
+      }
+  
+      if (order.state === 'new_order') {
+        totalNewOrders += 1;
+      } else if (order.state === 'canceled_by_client' || order.state === 'canceled_by_restaurateur') {
+        totalCanceledOrders += 1;
+      } else if (order.state === 'order_complete') {
+        totalCompletedOrders += 1;
+      } else if (order.state === 'preparing' || order.state === 'ready_to_deliver' || order.state === 'in_delivery') {
+        ordersInProgress += 1;
+      }
+  
+      if (order.Menu.length > 0) {
+        menuOrders += 1;
+      }
+  
+      if (order.Article.length > 0) {
+        articleOrders += 1;
+      }
+  
+      // Increment the count for the corresponding day of the week
+      ordersByDayOfWeek[orderDay] += 1;
+  
+      order.Menu.forEach(menuItem => {
+        menuItem.menuId.Article.forEach(article => {
+          if (categoryCounts[article.category]) {
+            categoryCounts[article.category] += 1;
+          } else {
+            categoryCounts[article.category] = 1;
+          }
+        });
+      });
+  
+      order.Article.forEach(articleItem => {
+        const article = articleItem.articleId;
+        if (categoryCounts[article.category]) {
+          categoryCounts[article.category] += 1;
+        } else {
+          categoryCounts[article.category] = 1;
+        }
+      });
+    });
+  
+    const categoryData = Object.entries(categoryCounts).map(([category, count]) => ({
+      label: category,
+      value: count,
+    }));
+  
+    setStatistics({
+      totalSales,
+      totalOrders,
+      totalNewOrders,
+      totalCanceledOrders,
+      totalCompletedOrders,
+      categoryData,
+      menuOrders,
+      articleOrders,
+      totalSalesThisMonth,
+      totalSalesThisYear,
+      ordersInProgress,
+      ordersByDayOfWeek,
+    });
+  };
+  
 
   return (
     <>
@@ -31,27 +168,43 @@ export default function DashboardAppPage() {
 
       <Container maxWidth="xl">
         <Typography variant="h4" sx={{ mb: 5 }}>
-          Hi, Welcome back
+          Hi {userInfo.first_name}, Welcome back
         </Typography>
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Weekly Sales" total={714000} icon={'ant-design:android-filled'} />
+            <AppWidgetSummary title="Total Sales" total={statistics.totalSales} icon={'ant-design:dollar-circle-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="New Users" total={1352831} color="info" icon={'ant-design:apple-filled'} />
+            <AppWidgetSummary title="Total Sales This Year" total={statistics.totalSalesThisYear} color="secondary" icon={'ant-design:calendar-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Item Orders" total={1723315} color="warning" icon={'ant-design:windows-filled'} />
+            <AppWidgetSummary title="Total Sales This Month" total={statistics.totalSalesThisMonth} color="warning" icon={'ant-design:calendar-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Bug Reports" total={234} color="error" icon={'ant-design:bug-filled'} />
+            <AppWidgetSummary title="Total Orders" total={statistics.totalOrders} icon={'ant-design:shopping-cart-outlined'} />
           </Grid>
 
-          <Grid item xs={12} md={6} lg={8}>
+          <Grid item xs={12} sm={6} md={3}>
+            <AppWidgetSummary title="New Orders" total={statistics.totalNewOrders} color="info" icon={'ant-design:shopping-filled'} />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <AppWidgetSummary title="Completed Orders" total={statistics.totalCompletedOrders} color="success" icon={'ant-design:check-circle-filled'} />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <AppWidgetSummary title="Canceled Orders" total={statistics.totalCanceledOrders} color="error" icon={'ant-design:close-circle-filled'} />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <AppWidgetSummary title="Orders in Progress" total={statistics.ordersInProgress} color="info" icon={'ant-design:sync-outlined'} />
+          </Grid>
+
+          {/* <Grid item xs={12} md={6} lg={8}>
             <AppWebsiteVisits
               title="Website Visits"
               subheader="(+43%) than last year"
@@ -89,59 +242,51 @@ export default function DashboardAppPage() {
                 },
               ]}
             />
+          </Grid> */}
+
+
+          <Grid item xs={12} md={12} lg={12}>
+            <AppConversionRates
+              title="Orders by Day of the Week"
+              subheader="Percentage of orders by day of the week"
+              chartData={statistics.ordersByDayOfWeek}
+            />
           </Grid>
 
-          <Grid item xs={12} md={6} lg={4}>
+
+          <Grid item xs={12} md={6} lg={6}>
             <AppCurrentVisits
-              title="Current Visits"
+              title="Menu vs Article Orders"
               chartData={[
-                { label: 'America', value: 4344 },
-                { label: 'Asia', value: 5435 },
-                { label: 'Europe', value: 1443 },
-                { label: 'Africa', value: 4443 },
+                { label: 'Menu Orders', value: statistics.menuOrders },
+                { label: 'Article Orders', value: statistics.articleOrders },
               ]}
               chartColors={[
                 theme.palette.primary.main,
                 theme.palette.info.main,
-                theme.palette.warning.main,
-                theme.palette.error.main,
               ]}
             />
           </Grid>
 
-          <Grid item xs={12} md={6} lg={8}>
-            <AppConversionRates
-              title="Conversion Rates"
-              subheader="(+43%) than last year"
-              chartData={[
-                { label: 'Italy', value: 400 },
-                { label: 'Japan', value: 430 },
-                { label: 'China', value: 448 },
-                { label: 'Canada', value: 470 },
-                { label: 'France', value: 540 },
-                { label: 'Germany', value: 580 },
-                { label: 'South Korea', value: 690 },
-                { label: 'Netherlands', value: 1100 },
-                { label: 'United States', value: 1200 },
-                { label: 'United Kingdom', value: 1380 },
-              ]}
-            />
-          </Grid>
 
-          <Grid item xs={12} md={6} lg={4}>
+          <Grid item xs={12} md={6} lg={6}>
             <AppCurrentSubject
-              title="Current Subject"
-              chartLabels={['English', 'History', 'Physics', 'Geography', 'Chinese', 'Math']}
+              title="Most Ordered Categories"
+              chartLabels={statistics.categoryData.map(data => data.label)}
               chartData={[
-                { name: 'Series 1', data: [80, 50, 30, 40, 100, 20] },
-                { name: 'Series 2', data: [20, 30, 40, 80, 20, 80] },
-                { name: 'Series 3', data: [44, 76, 78, 13, 43, 10] },
+                {
+                  name: 'Orders',
+                  data: statistics.categoryData.map(data => data.value),
+                }
               ]}
-              chartColors={[...Array(6)].map(() => theme.palette.text.secondary)}
+              chartColors={[...Array(statistics.categoryData.length)].map(() => theme.palette.text.secondary)}
             />
           </Grid>
 
-          <Grid item xs={12} md={6} lg={8}>
+          
+          
+
+          {/* <Grid item xs={12} md={6} lg={8}>
             <AppNewsUpdate
               title="News Update"
               list={[...Array(5)].map((_, index) => ({
@@ -211,7 +356,7 @@ export default function DashboardAppPage() {
                 { id: '5', label: 'Sprint Showcase' },
               ]}
             />
-          </Grid>
+          </Grid> */}
         </Grid>
       </Container>
     </>

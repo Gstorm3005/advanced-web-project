@@ -15,6 +15,7 @@ function App() {
     const fetchArticles = () => {
         axios.get('http://localhost:5000/technical/api/articles', {
             headers: {
+                apikey: 'your-secure-api-key',
                 authenticated: 'true'
             }
         })
@@ -30,6 +31,7 @@ function App() {
         e.preventDefault();
         axios.post('http://localhost:5000/technical/api/articles', { name, category, quantity, price }, {
             headers: {
+                apikey: 'your-secure-api-key',
                 authenticated: 'true'
             }
         })

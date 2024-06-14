@@ -1,49 +1,49 @@
-const Livreur = require('../models/Livreur');
+const Delivery = require('../models/Delivery');
 
-exports.createLivreur = async (req, res) => {
+exports.createDelivery = async (req, res) => {
   try {
-    const livreur = new Livreur(req.body);
-    await livreur.save();
-    res.status(201).json(livreur);
+    const delivery = new Delivery(req.body);
+    await delivery.save();
+    res.status(201).json(delivery);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-exports.getLivreurs = async (req, res) => {
+exports.getDeliverys = async (req, res) => {
   try {
-    const livreurs = await Livreur.find();
-    res.status(200).json(livreurs);
+    const deliverys = await Delivery.find();
+    res.status(200).json(deliverys);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-exports.getLivreurById = async (req, res) => {
+exports.getDeliveryById = async (req, res) => {
   try {
-    const livreur = await Livreur.findById(req.params.id);
-    if (!livreur) return res.status(404).json({ error: 'Livreur not found' });
-    res.status(200).json(livreur);
+    const delivery = await Delivery.findById(req.params.id);
+    if (!delivery) return res.status(404).json({ error: 'Delivery not found' });
+    res.status(200).json(delivery);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-exports.updateLivreur = async (req, res) => {
+exports.updateDelivery = async (req, res) => {
   try {
-    const livreur = await Livreur.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!livreur) return res.status(404).json({ error: 'Livreur not found' });
-    res.status(200).json(livreur);
+    const delivery = await Delivery.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!delivery) return res.status(404).json({ error: 'Delivery not found' });
+    res.status(200).json(delivery);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-exports.deleteLivreur = async (req, res) => {
+exports.deleteDelivery = async (req, res) => {
   try {
-    const livreur = await Livreur.findByIdAndDelete(req.params.id);
-    if (!livreur) return res.status(404).json({ error: 'Livreur not found' });
-    res.status(200).json({ message: 'Livreur deleted' });
+    const delivery = await Delivery.findByIdAndDelete(req.params.id);
+    if (!delivery) return res.status(404).json({ error: 'Delivery not found' });
+    res.status(200).json({ message: 'Delivery deleted' });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
