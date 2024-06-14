@@ -7,5 +7,8 @@ router.get('/', orderController.getOrders);
 router.get('/:id', orderController.getOrderById);
 router.put('/:id', orderController.updateOrder);
 router.delete('/:id', orderController.deleteOrder);
+router.get('/restaurateur/:id', orderController.getOrdersByRestaurateur);
+router.get('/neworder/:id', orderController.getNewOrders);
+router.put('/notif/:id', orderController.putNotifOff);
 
 module.exports = router;

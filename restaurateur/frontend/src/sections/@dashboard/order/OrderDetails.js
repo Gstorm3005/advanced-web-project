@@ -1,4 +1,3 @@
-// components/OrderDetailsDialog.js
 import React from 'react';
 import {
   Dialog,
@@ -6,58 +5,101 @@ import {
   DialogContent,
   DialogTitle,
   Button,
+  Typography,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Typography,
-  Stack,
+  List,
+  ListItem,
+  ListItemText
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-export default function OrderDetailsDialog({ open, onClose, order }) {
-  const calculateTotalPrice = (items) => {
-    return items.reduce((total, item) => total + item.price * item.quantity, 0);
+const OrderDetailsDialog = ({ open, onClose, order }) => {
+  if (!order) return null;
+
+  const calculateTotalPrice = (items, type) => {
+    return items.reduce((total, item) => total + (item[type]?.price || 0) * item.quantity, 0);
+  };
+
+  const calculateIndividualArticlesTotal = (articles, quantity) => {
+    return articles.reduce((total, article) => total + article.price, 0) * quantity;
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Order Details</DialogTitle>
       <DialogContent>
-        <Typography variant="h6">Client Address: {order.Client.address}</Typography>
-        <Typography variant="h6">Order Price: ${order.price}</Typography>
-        <Typography variant="h6">Order State: {sentenceCase(order.state.replace(/_/g, ' '))}</Typography>
-        
-        <Typography variant="h6" mt={2}>Articles Ordered</Typography>
-        {order.Article.map((article) => (
-          <Stack key={article.articleId} direction="row" justifyContent="space-between">
-            <Typography>{article.name} (x{article.quantity})</Typography>
-            <Typography>${article.price}</Typography>
-          </Stack>
-        ))}
-        <Typography variant="subtitle1">Total: ${calculateTotalPrice(order.Article)}</Typography>
+        <Typography variant="h6" gutterBottom>
+          Client Address: {order.Client?.address}
+        </Typography>
+        <Typography variant="h6" gutterBottom>
+          Order Price: ${order.price}
+        </Typography>
+        <Typography variant="h6" gutterBottom>
+          State: {order.state}
+        </Typography>
 
-        <Typography variant="h6" mt={2}>Menus Ordered</Typography>
-        {order.Menu.map((menu) => (
-          <Accordion key={menu.menuId}>
+        <Typography variant="h6" gutterBottom>
+          Articles Ordered
+        </Typography>
+        <List>
+          {order.Article && order.Article.map((article, index) => (
+            <ListItem key={article.articleId?._id || index}>
+              <ListItemText
+                primary={`${article.articleId?.name} - Quantity: ${article.quantity} - Unit Price: $${article.articleId?.price}`}
+                secondary={`Total: $${article.quantity * (article.articleId?.price || 0)}`}
+              />
+            </ListItem>
+          ))}
+        </List>
+        <Typography variant="subtitle1">
+          Total: ${order.Article ? calculateTotalPrice(order.Article, 'articleId') : 0}
+        </Typography>
+
+        <Typography variant="h6" gutterBottom>
+          Menus Ordered
+        </Typography>
+        {order.Menu && order.Menu.map((menu, index) => (
+          <Accordion key={menu.menuId?._id || index}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>{menu.name} (x{menu.quantity})</Typography>
-              <Typography>${menu.price}</Typography>
+              <Typography>
+                {menu.menuId?.name} - Quantity: {menu.quantity} - Unit Price: ${menu.menuId?.price}
+              </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              {menu.Article.map((article) => (
-                <Stack key={article.articleId} direction="row" justifyContent="space-between">
-                  <Typography>{article.name} (x{article.quantity})</Typography>
-                  <Typography>${article.price}</Typography>
-                </Stack>
-              ))}
-              <Typography variant="subtitle1">Menu Total: ${calculateTotalPrice(menu.Article)}</Typography>
+              <List>
+                {menu.menuId?.Article && menu.menuId.Article.map((article, idx) => (
+                  <ListItem key={article._id || idx}>
+                    <ListItemText
+                      primary={`${article.name} - Unit Price: $${article.price}`}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+              <Typography variant="subtitle1">
+                Total: ${menu.quantity * (menu.menuId?.price || 0)}
+              </Typography>
+              <Typography variant="subtitle1">
+                Total if bought individually: 
+                <span style={{ textDecoration: 'line-through' }}>
+                  ${calculateIndividualArticlesTotal(menu.menuId?.Article, menu.quantity)}
+                </span>
+              </Typography>
             </AccordionDetails>
           </Accordion>
         ))}
+        <Typography variant="subtitle1">
+          Total: ${order.Menu ? calculateTotalPrice(order.Menu, 'menuId') : 0}
+        </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">Close</Button>
+        <Button onClick={onClose} color="primary">
+          Close
+        </Button>
       </DialogActions>
     </Dialog>
   );
-}
+};
+
+export default OrderDetailsDialog;

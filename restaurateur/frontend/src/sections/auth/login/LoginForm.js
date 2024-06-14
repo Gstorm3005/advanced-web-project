@@ -28,7 +28,7 @@ export default function LoginForm() {
     axios.post(`http://localhost:5000/auth/api/login`, { email, password }, {
       headers: {
         apikey: process.env.REACT_APP_API_KEY,
-        role: "restaurateur"
+        role: process.env.REACT_APP_ROLE
       }
     }).then((response) => {
       if (response.data.error) {

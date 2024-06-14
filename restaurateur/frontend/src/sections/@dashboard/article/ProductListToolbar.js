@@ -57,7 +57,7 @@ export default function ProductListToolbar({ numSelected, filterTitle, onFilterT
         <StyledSearch
           value={filterTitle}
           onChange={onFilterTitle}
-          placeholder="Search product..."
+          placeholder="Search article..."
           startAdornment={
             <InputAdornment position="start">
               <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled', width: 20, height: 20 }} />

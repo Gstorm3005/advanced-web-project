@@ -28,7 +28,7 @@ import {
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 // sections
-import { ProductListHead, ProductListToolbar, ProductAdd, ProductEdit } from '../sections/@dashboard/product';
+import { ProductListHead, ProductListToolbar, ProductAdd, ProductEdit } from '../sections/@dashboard/article';
 
 // ----------------------------------------------------------------------
 
@@ -283,7 +283,6 @@ export default function ProductPage() {
 
                           <TableCell component="th" scope="row" padding="none">
                             <Stack direction="row" alignItems="center" spacing={2}>
-                              <Avatar alt={name} src={path} />
                               <Typography variant="subtitle2" noWrap>
                                 {name}
                               </Typography>

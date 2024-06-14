@@ -22,6 +22,6 @@ const orderSchema = new Schema({
   Client: { type: Schema.Types.ObjectId, ref: 'Client', required: true },
   Restaurateur: { type: Schema.Types.ObjectId, ref: 'Restaurateur', required: true },
   Delivery: { type: Schema.Types.ObjectId, ref: 'Delivery' }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Order', orderSchema);

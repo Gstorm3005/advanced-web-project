@@ -53,7 +53,7 @@ export default function SignUpForm() {
       axios.post(`http://localhost:5000/auth/api/signup`, values, {
         headers: {
           apikey: process.env.REACT_APP_API_KEY,
-          role: "restaurateur"
+          role: process.env.REACT_APP_ROLE
         }
       }).then((response) => {
         if (response.data.error) {

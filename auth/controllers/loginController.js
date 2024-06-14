@@ -21,21 +21,24 @@ exports.signup = async (req, res) => {
 
         // Create the user
         const user = await users.create({ first_name, last_name, phone, email, password: hashedPassword, role, state: true });
-            
-        let account;
-        switch (role) {
-            case 'restaurateur':
-                account = new Restaurateur({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: sponsorship_code_used || 'none', address });
-                break;
-            case 'enduser':
-                account = new Client({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: sponsorship_code_used || 'none', address });
-                break;
-            case 'delivery':
-                account = new Delivery({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: sponsorship_code_used || 'none' });
-                break;
-            
+        if(role=== 'restaurateur' || role=== 'enduser' || role=== 'delivery'){
+            console.log(role)
+            let account;
+            switch (role) {
+                case 'restaurateur':
+                    account = new Restaurateur({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: sponsorship_code_used || 'none', address });
+                    break;
+                case 'enduser':
+                    account = new Client({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: sponsorship_code_used || 'none', address });
+                    break;
+                case 'delivery':
+                    account = new Delivery({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: sponsorship_code_used || 'none' });
+                    break;
+                
+            }
+        
+            account.save()
         }
-        account.save()
         const log = new Log({ value: `A new account with the email: ${email} and the role: ${role} has been created`, type: "authentication"});
         await log.save();
         res.status(201).json({ message: 'User created successfully',randomHash });

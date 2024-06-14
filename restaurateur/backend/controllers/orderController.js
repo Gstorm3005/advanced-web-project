@@ -1,4 +1,5 @@
 const Order = require('../models/Order');
+const Restaurateur =require('../models/Restaurateur');
 const {User} = require('../SQLmodels/users')
 exports.createOrder = async (req, res) => {
   try {
@@ -27,17 +28,89 @@ exports.createOrder = async (req, res) => {
 exports.getOrders = async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate('Menu')
       .populate({
         path: 'Menu',
         populate: {
-          path: 'Article',
-        },
+          path: 'menuId',
+          populate: {
+            path: 'Article',
+            model: 'Article'
+          },
+          model: 'Menu'
+        }
       })
-      .populate('Article')
+      .populate({
+        path: 'Article.articleId',
+        model: 'Article'
+      })
       .populate('Client')
       .populate('Restaurateur')
       .populate('Delivery');
+
+    res.status(200).json(orders);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+exports.getNewOrders = async (req, res) => {
+  try {
+    const restaurateur = await Restaurateur.findOne({ID_user: req.params.id})
+
+    const orders = await Order.find({Restaurateur: restaurateur._id, state: "new_order"}).populate('Client')
+
+    res.status(200).json(orders);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+exports.putNotifOff = async (req, res) => {
+  try {
+    const restaurateur = await Restaurateur.findOne({ ID_user: req.params.id });
+
+    if (!restaurateur) {
+      return res.status(404).json({ error: 'Restaurateur not found' });
+    }
+
+    await Order.updateMany(
+      { Restaurateur: restaurateur._id, state: 'new_order' },
+      { $set: { notif_res: false } }
+    );
+
+    const updatedOrders = await Order.find({ Restaurateur: restaurateur._id, state: 'new_order' });
+
+    res.status(200).json(updatedOrders);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+
+exports.getOrdersByRestaurateur = async (req, res) => {
+  try {
+    const restaurateur = await Restaurateur.findOne({ID_user: req.params.id})
+
+    const orders = await Order.find({Restaurateur: restaurateur._id})
+      .populate({
+        path: 'Menu',
+        populate: {
+          path: 'menuId',
+          populate: {
+            path: 'Article',
+            model: 'Article'
+          },
+          model: 'Menu'
+        }
+      })
+      .populate({
+        path: 'Article.articleId',
+        model: 'Article'
+      })
+      .populate('Client')
+      .populate('Restaurateur')
+      .populate('Delivery');
+
     res.status(200).json(orders);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -65,20 +138,28 @@ exports.updateOrder = async (req, res) => {
   try {
     const { price, state, notif_res, notif_cli, notif_del, Menu, Article, Client, Restaurateur, Delivery } = req.body;
 
+    const updateData = {
+      price,
+      state,
+      notif_res,
+      notif_cli,
+      notif_del,
+      Client,
+      Restaurateur,
+      Delivery
+    };
+
+    if (Menu && Array.isArray(Menu)) {
+      updateData.Menu = Menu.map(menu => ({ menuId: menu.menuId, quantity: menu.quantity }));
+    }
+
+    if (Article && Array.isArray(Article)) {
+      updateData.Article = Article.map(article => ({ articleId: article.articleId, quantity: article.quantity }));
+    }
+
     const order = await Order.findByIdAndUpdate(
       req.params.id,
-      {
-        price,
-        state,
-        notif_res,
-        notif_cli,
-        notif_del,
-        Menu: Menu.map(menu => ({ menuId: menu.menuId, quantity: menu.quantity })),
-        Article: Article.map(article => ({ articleId: article.articleId, quantity: article.quantity })),
-        Client,
-        Restaurateur,
-        Delivery
-      },
+      updateData,
       { new: true, runValidators: true }
     );
 
@@ -88,6 +169,7 @@ exports.updateOrder = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
 
 
 exports.deleteOrder = async (req, res) => {

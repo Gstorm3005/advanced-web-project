@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 // @mui
 import {
@@ -22,16 +22,13 @@ import {
   IconButton,
   TableContainer,
   TablePagination,
-  Snackbar,
-  Alert
 } from '@mui/material';
 // components
 import Label from '../components/label';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 // sections
-import { UserListHead, UserListToolbar, OrderDetailsDialog } from '../sections/@dashboard/order';
-import { AuthContext } from "../helpers/AuthContext";
+import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 
 // ----------------------------------------------------------------------
 
@@ -39,30 +36,12 @@ const TABLE_HEAD = [
   { id: 'clientAddress', label: 'Client Address', alignRight: false },
   { id: 'price', label: 'Order Price', alignRight: false },
   { id: 'state', label: 'State', alignRight: false },
-  { id: 'createdAt', label: 'Date', alignRight: false },
   { id: '' },
-];
-
-// Define the custom order of states
-const stateOrder = [
-  'new_order',
-  'preparing',
-  'ready_to_deliver',
-  'in_delivery',
-  'order_complete',
-  'canceled_by_client',
-  'canceled_by_restaurateur'
 ];
 
 // ----------------------------------------------------------------------
 
 function descendingComparator(a, b, orderBy) {
-  if (orderBy === 'state') {
-    return stateOrder.indexOf(b[orderBy]) - stateOrder.indexOf(a[orderBy]);
-  }
-  if (orderBy === 'createdAt') {
-    return new Date(b[orderBy]) - new Date(a[orderBy]);
-  }
   if (b[orderBy] < a[orderBy]) {
     return -1;
   }
@@ -93,24 +72,25 @@ function applySortFilter(array, comparator, query) {
 
 export default function OrderPage() {
   const [open, setOpen] = useState(null);
-  const [openOrderId, setOpenOrderId] = useState(null);
+
   const [page, setPage] = useState(0);
+
   const [order, setOrder] = useState('asc');
+
   const [selected, setSelected] = useState([]);
+
   const [orderBy, setOrderBy] = useState('clientAddress');
+
   const [filterName, setFilterName] = useState('');
+
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
   const [orders, setOrders] = useState([]);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const { authState } = useContext(AuthContext);
-  const userInfo = authState.userInfo;
 
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/order/restaurateur/${userInfo.id}`, {
+    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/order`, {
       headers: {
-        accessToken: localStorage.getItem('accessToken'),
+        accessToken: localStorage.getItem("accessToken"),
         apikey: process.env.REACT_APP_API_KEY,
       },
     })
@@ -125,16 +105,14 @@ export default function OrderPage() {
       console.error(error);
       // Handle the error, e.g., redirect to an error page or show a relevant message to the user.
     });
-  }, [userInfo.id]);
+  }, []);
 
-  const handleOpenMenu = (event, id) => {
+  const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
-    setOpenOrderId(id);
   };
 
   const handleCloseMenu = () => {
     setOpen(null);
-    setOpenOrderId(null);
   };
 
   const handleRequestSort = (event, property) => {
@@ -179,58 +157,6 @@ export default function OrderPage() {
   const handleFilterByName = (event) => {
     setPage(0);
     setFilterName(event.target.value);
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
-  const handleValidateOrder = (id) => {
-    axios.put(`${process.env.REACT_APP_IP_ADDRESS}/order/${id}`, { state: 'preparing' }, {
-      headers: {
-        accessToken: localStorage.getItem('accessToken'),
-        apikey: process.env.REACT_APP_API_KEY,
-      },
-    })
-    .then((response) => {
-      setOrders(orders.map(order => order._id === id ? { ...order, state: 'preparing' } : order));
-      setSnackbar({ open: true, message: 'Order status updated to preparing', severity: 'success' });
-      handleCloseMenu();
-    })
-    .catch((error) => {
-      setSnackbar({ open: true, message: 'Error updating order status', severity: 'error' });
-      console.error(error);
-    });
-  };
-
-  const handleCancelOrder = (id) => {
-    axios.put(`${process.env.REACT_APP_IP_ADDRESS}/order/${id}`, { state: 'canceled_by_restaurateur' }, {
-      headers: {
-        accessToken: localStorage.getItem('accessToken'),
-        apikey: process.env.REACT_APP_API_KEY,
-      },
-    })
-    .then((response) => {
-      setOrders(orders.map(order => order._id === id ? { ...order, state: 'canceled_by_restaurateur' } : order));
-      setSnackbar({ open: true, message: 'Order has been canceled', severity: 'success' });
-      handleCloseMenu();
-    })
-    .catch((error) => {
-      setSnackbar({ open: true, message: 'Error updating order status', severity: 'error' });
-      console.error(error);
-    });
-  };
-
-  const handleViewOrder = (id) => {
-    const order = orders.find(order => order._id === id);
-    setSelectedOrder(order);
-    setDialogOpen(true);
-    handleCloseMenu();
-  };
-
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-    setSelectedOrder(null);
   };
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - orders.length) : 0;
@@ -292,7 +218,7 @@ export default function OrderPage() {
                 />
                 <TableBody>
                   {filteredOrders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { _id, Client, price, state, createdAt } = row;
+                    const { _id, Client, price, state } = row;
                     const selectedOrder = selected.indexOf(Client.address) !== -1;
 
                     return (
@@ -314,11 +240,9 @@ export default function OrderPage() {
                         <TableCell align="left">
                           <Label color={getStateColor(state)}>{sentenceCase(state.replace(/_/g, ' '))}</Label>
                         </TableCell>
-                        
-                        <TableCell align="left">{new Date(createdAt).toLocaleString()}</TableCell>
 
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, _id)}>
+                          <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -389,32 +313,20 @@ export default function OrderPage() {
           },
         }}
       >
-        {openOrderId && orders.find(order => order._id === openOrderId).state === 'new_order' && (
-          <MenuItem onClick={() => handleValidateOrder(openOrderId)} sx={{ color: 'success.main' }}>
-            <Iconify icon={'eva:checkmark-circle-fill'} sx={{ mr: 2 }} />
-            Validate
-          </MenuItem>
-        )}
-        {openOrderId && orders.find(order => order._id === openOrderId).state === 'new_order' && (
-          <MenuItem onClick={() => handleCancelOrder(openOrderId)} sx={{ color: 'error.main' }} >
-            <Iconify icon={'eva:close-circle-outline'} sx={{ mr: 2 }} />
-            Refuse
-          </MenuItem>
-        )}
-        <MenuItem onClick={() => handleViewOrder(openOrderId)}>
+        <MenuItem sx={{ color: 'success.main' }}>
+          <Iconify icon={'eva:checkmark-circle-fill'} sx={{ mr: 2 }} />
+          Validate
+        </MenuItem>
+        <MenuItem>
           <Iconify icon={'eva:eye-outline'} sx={{ mr: 2 }} />
           View
         </MenuItem>
 
+        <MenuItem sx={{ color: 'error.main' }}>
+          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
+          Delete
+        </MenuItem>
       </Popover>
-
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-
-      <OrderDetailsDialog open={dialogOpen} onClose={handleCloseDialog} order={selectedOrder} />
     </>
   );
 }

@@ -165,7 +165,6 @@ export default function MenuPage() {
       if (response.data.error) {
         console.error(response.data.error);
       } else {
-        console.log(response.data)
         setMenus(response.data);
       }
     })
@@ -284,7 +283,6 @@ export default function MenuPage() {
 
                           <TableCell component="th" scope="row" padding="none">
                             <Stack direction="row" alignItems="center" spacing={2}>
-                              <Avatar alt={name} src={path} />
                               <Typography variant="subtitle2" noWrap>
                                 {name}
                               </Typography>

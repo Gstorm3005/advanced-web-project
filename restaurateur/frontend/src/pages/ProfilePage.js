@@ -34,7 +34,7 @@ function ProfilePage() {
         .catch((error) => {
           console.error(error);
         });
-        axios.get(`http://localhost:5000/auth/api/check`, { headers: { accessToken: localStorage.getItem("accessToken"), apikey: process.env.REACT_APP_API_KEY, role: "restaurateur" } }).then((response) => {
+        axios.get(`http://localhost:5000/auth/api/check`, { headers: { accessToken: localStorage.getItem("accessToken"), apikey: process.env.REACT_APP_API_KEY, role: process.env.REACT_APP_ROLE } }).then((response) => {
             if (response.data.error) {
                 setUserSQL({});
             } else {
