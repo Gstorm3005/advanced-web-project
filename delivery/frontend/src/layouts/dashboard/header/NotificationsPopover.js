@@ -59,10 +59,10 @@ export default function NotificationsPopover() {
       }
     };
 
-    fetchNewOrders();
-    const interval = setInterval(fetchNewOrders, 5000);
+    // fetchNewOrders();
+    // const interval = setInterval(fetchNewOrders, 5000);
 
-    return () => clearInterval(interval);
+    // return () => clearInterval(interval);
   }, [userInfo.id]);
 
   const totalUnRead = notifications.filter((item) => item.isUnRead === true).length;

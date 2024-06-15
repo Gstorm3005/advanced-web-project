@@ -141,7 +141,7 @@ export default function ProductAdd({ open, handleClose, handleMessage, handleMes
         };
 
         console.log("Creating article with data:", articleData);
-        const articleResponse = await axios.post(`http://localhost:5000/restaurateur/api/articles`, articleData, {
+        const articleResponse = await axios.post(`${process.env.REACT_APP_IP_ADDRESS}/api/articles`, articleData, {
           headers: {
             accessToken: localStorage.getItem("accessToken"),
             apikey: process.env.REACT_APP_API_KEY,

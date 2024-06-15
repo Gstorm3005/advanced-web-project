@@ -9,7 +9,6 @@ import {
   Table,
   Stack,
   Paper,
-  Avatar,
   Button,
   Popover,
   Checkbox,
@@ -37,9 +36,10 @@ import { AuthContext } from "../helpers/AuthContext";
 
 const TABLE_HEAD = [
   { id: 'clientAddress', label: 'Client Address', alignRight: false },
+  { id: 'restaurateurAddress', label: 'Restaurateur Address', alignRight: false },
   { id: 'price', label: 'Order Price', alignRight: false },
+  { id: 'delPrice', label: 'Delivery Price', alignRight: false },
   { id: 'state', label: 'State', alignRight: false },
-  { id: 'createdAt', label: 'Date', alignRight: false },
   { id: '' },
 ];
 
@@ -108,7 +108,7 @@ export default function OrderPage() {
   const userInfo = authState.userInfo;
 
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/order/restaurateur/${userInfo.id}`, {
+    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/order/deliverytaken/${userInfo.id}`, {
       headers: {
         accessToken: localStorage.getItem('accessToken'),
         apikey: process.env.REACT_APP_API_KEY,
@@ -118,7 +118,11 @@ export default function OrderPage() {
       if (response.data.error) {
         console.error(response.data.error);
       } else {
-        setOrders(response.data);
+        const ordersData = response.data.map(order => ({
+          ...order,
+          delPrice: order.del_price
+        }));
+        setOrders(ordersData);
       }
     })
     .catch((error) => {
@@ -186,15 +190,15 @@ export default function OrderPage() {
   };
 
   const handleValidateOrder = (id) => {
-    axios.put(`${process.env.REACT_APP_IP_ADDRESS}/order/${id}`, { state: 'preparing' }, {
+    axios.put(`${process.env.REACT_APP_IP_ADDRESS}/order/${id}`, { state: 'order_complete' }, {
       headers: {
         accessToken: localStorage.getItem('accessToken'),
         apikey: process.env.REACT_APP_API_KEY,
       },
     })
     .then((response) => {
-      setOrders(orders.map(order => order._id === id ? { ...order, state: 'preparing' } : order));
-      setSnackbar({ open: true, message: 'Order status updated to preparing', severity: 'success' });
+      setOrders(orders.map(order => order._id === id ? { ...order, state: 'order_complete' } : order));
+      setSnackbar({ open: true, message: 'Order has been payed successfully', severity: 'success' });
       handleCloseMenu();
     })
     .catch((error) => {
@@ -292,7 +296,7 @@ export default function OrderPage() {
                 />
                 <TableBody>
                   {filteredOrders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { _id, Client, price, state, createdAt } = row;
+                    const { _id, Client, Restaurateur, price, delPrice, state, createdAt } = row;
                     const selectedOrder = selected.indexOf(Client.address) !== -1;
 
                     return (
@@ -309,14 +313,16 @@ export default function OrderPage() {
                           </Stack>
                         </TableCell>
 
+                        <TableCell align="left">{Restaurateur.address}</TableCell>
+                        
                         <TableCell align="left">{price}</TableCell>
+
+                        <TableCell align="left">{delPrice}</TableCell>
 
                         <TableCell align="left">
                           <Label color={getStateColor(state)}>{sentenceCase(state.replace(/_/g, ' '))}</Label>
                         </TableCell>
                         
-                        <TableCell align="left">{new Date(createdAt).toLocaleString()}</TableCell>
-
                         <TableCell align="right">
                           <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, _id)}>
                             <Iconify icon={'eva:more-vertical-fill'} />
@@ -389,23 +395,16 @@ export default function OrderPage() {
           },
         }}
       >
-        {openOrderId && orders.find(order => order._id === openOrderId).state === 'new_order' && (
-          <MenuItem onClick={() => handleValidateOrder(openOrderId)} sx={{ color: 'success.main' }}>
-            <Iconify icon={'eva:checkmark-circle-fill'} sx={{ mr: 2 }} />
-            Validate
-          </MenuItem>
-        )}
-        {openOrderId && orders.find(order => order._id === openOrderId).state === 'new_order' && (
-          <MenuItem onClick={() => handleCancelOrder(openOrderId)} sx={{ color: 'error.main' }} >
-            <Iconify icon={'eva:close-circle-outline'} sx={{ mr: 2 }} />
-            Refuse
-          </MenuItem>
+       {openOrderId && orders.find(order => order._id === openOrderId).state === 'in_delivery' && (
+        <MenuItem onClick={() => handleValidateOrder(openOrderId)} sx={{ color: 'success.main' }}>
+          <Iconify icon={'eva:checkmark-circle-fill'} sx={{ mr: 2 }} />
+          Delivered
+        </MenuItem>
         )}
         <MenuItem onClick={() => handleViewOrder(openOrderId)}>
           <Iconify icon={'eva:eye-outline'} sx={{ mr: 2 }} />
           View
         </MenuItem>
-
       </Popover>
 
       <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>

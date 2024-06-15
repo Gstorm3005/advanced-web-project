@@ -1,49 +1,114 @@
-import { useState, useEffect, useContext } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { filter } from 'lodash';
+import { sentenceCase } from 'change-case';
+import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { faker } from '@faker-js/faker';
-
-import { useTheme } from '@mui/material/styles';
-import { Grid, Container, Typography } from '@mui/material';
-import Iconify from '../components/iconify';
+// @mui
 import {
-  AppTasks,
-  AppNewsUpdate,
-  AppOrderTimeline,
-  AppCurrentVisits,
-  AppWebsiteVisits,
-  AppTrafficBySite,
-  AppWidgetSummary,
-  AppCurrentSubject,
-  AppConversionRates,
-} from '../sections/@dashboard/app';
+  Card,
+  Table,
+  Stack,
+  Paper,
+  Button,
+  Popover,
+  Checkbox,
+  TableRow,
+  MenuItem,
+  TableBody,
+  TableCell,
+  Container,
+  Typography,
+  IconButton,
+  TableContainer,
+  TablePagination,
+  Snackbar,
+  Alert
+} from '@mui/material';
+// components
+import Label from '../components/label';
+import Iconify from '../components/iconify';
+import Scrollbar from '../components/scrollbar';
+// sections
+import { UserListHead, UserListToolbar, OrderDetailsDialog } from '../sections/@dashboard/order';
 import { AuthContext } from "../helpers/AuthContext";
 
 // ----------------------------------------------------------------------
 
-export default function DashboardAppPage() {
-  const theme = useTheme();
+const TABLE_HEAD = [
+  { id: 'clientAddress', label: 'Client Address', alignRight: false },
+  { id: 'restaurateurAddress', label: 'Restaurateur Address', alignRight: false },
+  { id: 'price', label: 'Order Price', alignRight: false },
+  { id: 'delPrice', label: 'Delivery Price', alignRight: false },
+  { id: 'state', label: 'State', alignRight: false },
+  { id: '' },
+];
+
+// Define the custom order of states
+const stateOrder = [
+  'new_order',
+  'preparing',
+  'ready_to_deliver',
+  'in_delivery',
+  'order_complete',
+  'canceled_by_client',
+  'canceled_by_restaurateur'
+];
+
+// ----------------------------------------------------------------------
+
+function descendingComparator(a, b, orderBy) {
+  if (orderBy === 'state') {
+    return stateOrder.indexOf(b[orderBy]) - stateOrder.indexOf(a[orderBy]);
+  }
+  if (orderBy === 'createdAt') {
+    return new Date(b[orderBy]) - new Date(a[orderBy]);
+  }
+  if (b[orderBy] < a[orderBy]) {
+    return -1;
+  }
+  if (b[orderBy] > a[orderBy]) {
+    return 1;
+  }
+  return 0;
+}
+
+function getComparator(order, orderBy) {
+  return order === 'desc'
+    ? (a, b) => descendingComparator(a, b, orderBy)
+    : (a, b) => -descendingComparator(a, b, orderBy);
+}
+
+function applySortFilter(array, comparator, query) {
+  const stabilizedThis = array.map((el, index) => [el, index]);
+  stabilizedThis.sort((a, b) => {
+    const order = comparator(a[0], b[0]);
+    if (order !== 0) return order;
+    return a[1] - b[1];
+  });
+  if (query) {
+    return filter(array, (_order) => _order.Client.address.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+  }
+  return stabilizedThis.map((el) => el[0]);
+}
+
+export default function OrderPage() {
+  const [open, setOpen] = useState(null);
+  const [openOrderId, setOpenOrderId] = useState(null);
+  const [page, setPage] = useState(0);
+  const [order, setOrder] = useState('asc');
+  const [selected, setSelected] = useState([]);
+  const [orderBy, setOrderBy] = useState('clientAddress');
+  const [filterName, setFilterName] = useState('');
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [orders, setOrders] = useState([]);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const { authState } = useContext(AuthContext);
   const userInfo = authState.userInfo;
-  const [orders, setOrders] = useState([]);
-  const [statistics, setStatistics] = useState({
-    totalSales: 0,
-    totalOrders: 0,
-    totalNewOrders: 0,
-    totalCanceledOrders: 0,
-    totalCompletedOrders: 0,
-    categoryData: [],
-    menuOrders: 0,
-    articleOrders: 0,
-    totalSalesThisMonth: 0,
-    totalSalesThisYear: 0,
-    ordersInProgress: 0,
-    ordersByDayOfWeek: [],
-  });
-  
 
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/order/restaurateur/${userInfo.id}`, {
+    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/order/delivery`, {
       headers: {
         accessToken: localStorage.getItem('accessToken'),
         apikey: process.env.REACT_APP_API_KEY,
@@ -53,9 +118,11 @@ export default function DashboardAppPage() {
       if (response.data.error) {
         console.error(response.data.error);
       } else {
-        const ordersData = response.data;
+        const ordersData = response.data.map(order => ({
+          ...order,
+          delPrice: order.del_price
+        }));
         setOrders(ordersData);
-        calculateStatistics(ordersData);
       }
     })
     .catch((error) => {
@@ -64,301 +131,287 @@ export default function DashboardAppPage() {
     });
   }, [userInfo.id]);
 
-  const calculateStatistics = (orders) => {
-    let totalSales = 0;
-    let totalSalesThisMonth = 0;
-    let totalSalesThisYear = 0;
-    const totalOrders = orders.length;
-    let totalNewOrders = 0;
-    let totalCanceledOrders = 0;
-    let totalCompletedOrders = 0;
-    let ordersInProgress = 0;
-    let menuOrders = 0;
-    let articleOrders = 0;
-    const categoryCounts = {};
-    const ordersByDayOfWeek = Array(7).fill(0); // Initialize array to hold orders for each day of the week
-  
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-  
-    orders.forEach(order => {
-      const orderDate = new Date(order.createdAt);
-      const orderMonth = orderDate.getMonth();
-      const orderYear = orderDate.getFullYear();
-      const orderDay = orderDate.getDay(); // Get the day of the week (0-6, where 0 is Sunday)
-  
-      totalSales += order.price;
-  
-      if (orderMonth === currentMonth && orderYear === currentYear) {
-        totalSalesThisMonth += order.price;
-      }
-  
-      if (orderYear === currentYear) {
-        totalSalesThisYear += order.price;
-      }
-  
-      if (order.state === 'new_order') {
-        totalNewOrders += 1;
-      } else if (order.state === 'canceled_by_client' || order.state === 'canceled_by_restaurateur') {
-        totalCanceledOrders += 1;
-      } else if (order.state === 'order_complete') {
-        totalCompletedOrders += 1;
-      } else if (order.state === 'preparing' || order.state === 'ready_to_deliver' || order.state === 'in_delivery') {
-        ordersInProgress += 1;
-      }
-  
-      if (order.Menu.length > 0) {
-        menuOrders += 1;
-      }
-  
-      if (order.Article.length > 0) {
-        articleOrders += 1;
-      }
-  
-      // Increment the count for the corresponding day of the week
-      ordersByDayOfWeek[orderDay] += 1;
-  
-      order.Menu.forEach(menuItem => {
-        menuItem.menuId.Article.forEach(article => {
-          if (categoryCounts[article.category]) {
-            categoryCounts[article.category] += 1;
-          } else {
-            categoryCounts[article.category] = 1;
-          }
-        });
-      });
-  
-      order.Article.forEach(articleItem => {
-        const article = articleItem.articleId;
-        if (categoryCounts[article.category]) {
-          categoryCounts[article.category] += 1;
-        } else {
-          categoryCounts[article.category] = 1;
-        }
-      });
-    });
-  
-    const categoryData = Object.entries(categoryCounts).map(([category, count]) => ({
-      label: category,
-      value: count,
-    }));
-  
-    setStatistics({
-      totalSales,
-      totalOrders,
-      totalNewOrders,
-      totalCanceledOrders,
-      totalCompletedOrders,
-      categoryData,
-      menuOrders,
-      articleOrders,
-      totalSalesThisMonth,
-      totalSalesThisYear,
-      ordersInProgress,
-      ordersByDayOfWeek,
+  const handleOpenMenu = (event, id) => {
+    setOpen(event.currentTarget);
+    setOpenOrderId(id);
+  };
+
+  const handleCloseMenu = () => {
+    setOpen(null);
+    setOpenOrderId(null);
+  };
+
+  const handleRequestSort = (event, property) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  const handleSelectAllClick = (event) => {
+    if (event.target.checked) {
+      const newSelecteds = orders.map((n) => n.Client.address);
+      setSelected(newSelecteds);
+      return;
+    }
+    setSelected([]);
+  };
+
+  const handleClick = (event, address) => {
+    const selectedIndex = selected.indexOf(address);
+    let newSelected = [];
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selected, address);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selected.slice(1));
+    } else if (selectedIndex === selected.length - 1) {
+      newSelected = newSelected.concat(selected.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
+    }
+    setSelected(newSelected);
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setPage(0);
+    setRowsPerPage(parseInt(event.target.value, 10));
+  };
+
+  const handleFilterByName = (event) => {
+    setPage(0);
+    setFilterName(event.target.value);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleValidateOrder = (id) => {
+    axios.post(`${process.env.REACT_APP_IP_ADDRESS}/order/take/${userInfo.id}`, { id }, {
+      headers: {
+        accessToken: localStorage.getItem('accessToken'),
+        apikey: process.env.REACT_APP_API_KEY,
+      },
+    })
+    .then((response) => {
+      setOrders(orders.filter(order => order._id !== id));
+      setSnackbar({ open: true, message: 'Order has been taken', severity: 'success' });
+      handleCloseMenu();
+    })
+    .catch((error) => {
+      setSnackbar({ open: true, message: 'Error updating order status', severity: 'error' });
+      console.error(error);
     });
   };
-  
+
+  const handleCancelOrder = (id) => {
+    axios.put(`${process.env.REACT_APP_IP_ADDRESS}/order/${id}`, { state: 'canceled_by_restaurateur' }, {
+      headers: {
+        accessToken: localStorage.getItem('accessToken'),
+        apikey: process.env.REACT_APP_API_KEY,
+      },
+    })
+    .then((response) => {
+      setOrders(orders.map(order => order._id === id ? { ...order, state: 'canceled_by_restaurateur' } : order));
+      setSnackbar({ open: true, message: 'Order has been canceled', severity: 'success' });
+      handleCloseMenu();
+    })
+    .catch((error) => {
+      setSnackbar({ open: true, message: 'Error updating order status', severity: 'error' });
+      console.error(error);
+    });
+  };
+
+  const handleViewOrder = (id) => {
+    const order = orders.find(order => order._id === id);
+    setSelectedOrder(order);
+    setDialogOpen(true);
+    handleCloseMenu();
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setSelectedOrder(null);
+  };
+
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - orders.length) : 0;
+
+  const filteredOrders = applySortFilter(orders, getComparator(order, orderBy), filterName);
+
+  const isNotFound = !filteredOrders.length && !!filterName;
+
+  const getStateColor = (state) => {
+    switch (state) {
+      case 'new_order':
+        return 'info';
+      case 'canceled_by_client':
+      case 'canceled_by_restaurateur':
+        return 'error';
+      case 'preparing':
+        return 'warning';
+      case 'ready_to_deliver':
+        return 'primary';
+      case 'in_delivery':
+        return 'info';
+      case 'order_complete':
+        return 'success';
+      default:
+        return 'default';
+    }
+  };
 
   return (
     <>
       <Helmet>
-        <title> Dashboard | Minimal UI </title>
+        <title> Orders | Minimal UI </title>
       </Helmet>
 
-      <Container maxWidth="xl">
-        <Typography variant="h4" sx={{ mb: 5 }}>
-          Hi {userInfo.first_name}, Welcome back
-        </Typography>
+      <Container>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+          <Typography variant="h4" gutterBottom>
+            Orders
+          </Typography>
+          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
+            New Order
+          </Button>
+        </Stack>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Total Sales" total={statistics.totalSales} icon={'ant-design:dollar-circle-filled'} />
-          </Grid>
+        <Card>
+          <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
 
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Total Sales This Year" total={statistics.totalSalesThisYear} color="secondary" icon={'ant-design:calendar-filled'} />
-          </Grid>
+          <Scrollbar>
+            <TableContainer sx={{ minWidth: 800 }}>
+              <Table>
+                <UserListHead
+                  order={order}
+                  orderBy={orderBy}
+                  headLabel={TABLE_HEAD}
+                  rowCount={orders.length}
+                  numSelected={selected.length}
+                  onRequestSort={handleRequestSort}
+                  onSelectAllClick={handleSelectAllClick}
+                />
+                <TableBody>
+                  {filteredOrders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                    const { _id, Client, Restaurateur, price, delPrice, state, createdAt } = row;
+                    const selectedOrder = selected.indexOf(Client.address) !== -1;
 
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Total Sales This Month" total={statistics.totalSalesThisMonth} color="warning" icon={'ant-design:calendar-filled'} />
-          </Grid>
+                    return (
+                      <TableRow hover key={_id} tabIndex={-1} role="checkbox" selected={selectedOrder}>
+                        <TableCell padding="checkbox">
+                          <Checkbox checked={selectedOrder} onChange={(event) => handleClick(event, Client.address)} />
+                        </TableCell>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Total Orders" total={statistics.totalOrders} icon={'ant-design:shopping-cart-outlined'} />
-          </Grid>
+                        <TableCell component="th" scope="row" padding="none">
+                          <Stack direction="row" alignItems="center" spacing={2}>
+                            <Typography variant="subtitle2" noWrap>
+                              {Client.address}
+                            </Typography>
+                          </Stack>
+                        </TableCell>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="New Orders" total={statistics.totalNewOrders} color="info" icon={'ant-design:shopping-filled'} />
-          </Grid>
+                        <TableCell align="left">{Restaurateur.address}</TableCell>
+                        
+                        <TableCell align="left">{price}</TableCell>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Completed Orders" total={statistics.totalCompletedOrders} color="success" icon={'ant-design:check-circle-filled'} />
-          </Grid>
+                        <TableCell align="left">{delPrice}</TableCell>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Canceled Orders" total={statistics.totalCanceledOrders} color="error" icon={'ant-design:close-circle-filled'} />
-          </Grid>
+                        <TableCell align="left">
+                          <Label color={getStateColor(state)}>{sentenceCase(state.replace(/_/g, ' '))}</Label>
+                        </TableCell>
+                        
+                        <TableCell align="right">
+                          <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, _id)}>
+                            <Iconify icon={'eva:more-vertical-fill'} />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {emptyRows > 0 && (
+                    <TableRow style={{ height: 53 * emptyRows }}>
+                      <TableCell colSpan={6} />
+                    </TableRow>
+                  )}
+                </TableBody>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Orders in Progress" total={statistics.ordersInProgress} color="info" icon={'ant-design:sync-outlined'} />
-          </Grid>
+                {isNotFound && (
+                  <TableBody>
+                    <TableRow>
+                      <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                        <Paper
+                          sx={{
+                            textAlign: 'center',
+                          }}
+                        >
+                          <Typography variant="h6" paragraph>
+                            Not found
+                          </Typography>
 
-          {/* <Grid item xs={12} md={6} lg={8}>
-            <AppWebsiteVisits
-              title="Website Visits"
-              subheader="(+43%) than last year"
-              chartLabels={[
-                '01/01/2003',
-                '02/01/2003',
-                '03/01/2003',
-                '04/01/2003',
-                '05/01/2003',
-                '06/01/2003',
-                '07/01/2003',
-                '08/01/2003',
-                '09/01/2003',
-                '10/01/2003',
-                '11/01/2003',
-              ]}
-              chartData={[
-                {
-                  name: 'Team A',
-                  type: 'column',
-                  fill: 'solid',
-                  data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30],
-                },
-                {
-                  name: 'Team B',
-                  type: 'area',
-                  fill: 'gradient',
-                  data: [44, 55, 41, 67, 22, 43, 21, 41, 56, 27, 43],
-                },
-                {
-                  name: 'Team C',
-                  type: 'line',
-                  fill: 'solid',
-                  data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39],
-                },
-              ]}
-            />
-          </Grid> */}
+                          <Typography variant="body2">
+                            No results found for &nbsp;
+                            <strong>&quot;{filterName}&quot;</strong>.
+                            <br /> Try checking for typos or using complete words.
+                          </Typography>
+                        </Paper>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                )}
+              </Table>
+            </TableContainer>
+          </Scrollbar>
 
-
-          <Grid item xs={12} md={12} lg={12}>
-            <AppConversionRates
-              title="Orders by Day of the Week"
-              subheader="Percentage of orders by day of the week"
-              chartData={statistics.ordersByDayOfWeek}
-            />
-          </Grid>
-
-
-          <Grid item xs={12} md={6} lg={6}>
-            <AppCurrentVisits
-              title="Menu vs Article Orders"
-              chartData={[
-                { label: 'Menu Orders', value: statistics.menuOrders },
-                { label: 'Article Orders', value: statistics.articleOrders },
-              ]}
-              chartColors={[
-                theme.palette.primary.main,
-                theme.palette.info.main,
-              ]}
-            />
-          </Grid>
-
-
-          <Grid item xs={12} md={6} lg={6}>
-            <AppCurrentSubject
-              title="Most Ordered Categories"
-              chartLabels={statistics.categoryData.map(data => data.label)}
-              chartData={[
-                {
-                  name: 'Orders',
-                  data: statistics.categoryData.map(data => data.value),
-                }
-              ]}
-              chartColors={[...Array(statistics.categoryData.length)].map(() => theme.palette.text.secondary)}
-            />
-          </Grid>
-
-          
-          
-
-          {/* <Grid item xs={12} md={6} lg={8}>
-            <AppNewsUpdate
-              title="News Update"
-              list={[...Array(5)].map((_, index) => ({
-                id: faker.datatype.uuid(),
-                title: faker.name.jobTitle(),
-                description: faker.name.jobTitle(),
-                image: `/assets/images/covers/cover_${index + 1}.jpg`,
-                postedAt: faker.date.recent(),
-              }))}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={4}>
-            <AppOrderTimeline
-              title="Order Timeline"
-              list={[...Array(5)].map((_, index) => ({
-                id: faker.datatype.uuid(),
-                title: [
-                  '1983, orders, $4220',
-                  '12 Invoices have been paid',
-                  'Order #37745 from September',
-                  'New order placed #XF-2356',
-                  'New order placed #XF-2346',
-                ][index],
-                type: `order${index + 1}`,
-                time: faker.date.past(),
-              }))}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={4}>
-            <AppTrafficBySite
-              title="Traffic by Site"
-              list={[
-                {
-                  name: 'FaceBook',
-                  value: 323234,
-                  icon: <Iconify icon={'eva:facebook-fill'} color="#1877F2" width={32} />,
-                },
-                {
-                  name: 'Google',
-                  value: 341212,
-                  icon: <Iconify icon={'eva:google-fill'} color="#DF3E30" width={32} />,
-                },
-                {
-                  name: 'Linkedin',
-                  value: 411213,
-                  icon: <Iconify icon={'eva:linkedin-fill'} color="#006097" width={32} />,
-                },
-                {
-                  name: 'Twitter',
-                  value: 443232,
-                  icon: <Iconify icon={'eva:twitter-fill'} color="#1C9CEA" width={32} />,
-                },
-              ]}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={8}>
-            <AppTasks
-              title="Tasks"
-              list={[
-                { id: '1', label: 'Create FireStone Logo' },
-                { id: '2', label: 'Add SCSS and JS files if required' },
-                { id: '3', label: 'Stakeholder Meeting' },
-                { id: '4', label: 'Scoping & Estimations' },
-                { id: '5', label: 'Sprint Showcase' },
-              ]}
-            />
-          </Grid> */}
-        </Grid>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={orders.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Card>
       </Container>
+
+      <Popover
+        open={Boolean(open)}
+        anchorEl={open}
+        onClose={handleCloseMenu}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        PaperProps={{
+          sx: {
+            p: 1,
+            width: 140,
+            '& .MuiMenuItem-root': {
+              px: 1,
+              typography: 'body2',
+              borderRadius: 0.75,
+            },
+          },
+        }}
+      >
+        <MenuItem onClick={() => handleValidateOrder(openOrderId)} sx={{ color: 'success.main' }}>
+          <Iconify icon={'eva:checkmark-circle-fill'} sx={{ mr: 2 }} />
+          Take
+        </MenuItem>
+        <MenuItem onClick={() => handleViewOrder(openOrderId)}>
+          <Iconify icon={'eva:eye-outline'} sx={{ mr: 2 }} />
+          View
+        </MenuItem>
+      </Popover>
+
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
+      <OrderDetailsDialog open={dialogOpen} onClose={handleCloseDialog} order={selectedOrder} />
     </>
   );
 }

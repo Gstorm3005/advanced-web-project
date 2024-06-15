@@ -17,7 +17,7 @@ function ProfilePage() {
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_IP_ADDRESS}/restaurateurs/${userInfo.id}`, {
+        axios.get(`${process.env.REACT_APP_IP_ADDRESS}/delivery/${userInfo.id}`, {
           headers: {
             accessToken: localStorage.getItem("accessToken"),
             apikey: process.env.REACT_APP_API_KEY,
@@ -69,7 +69,6 @@ function ProfilePage() {
             last_name: userSQL.last_name || '',
             email: userSQL.email || '',
             phone: userSQL.phone || '',
-            address: user.address || '',
             sponsorship_code_used: user.sponsorship_code_used || ''
         },
         validationSchema: Yup.object({
@@ -77,7 +76,6 @@ function ProfilePage() {
             last_name: Yup.string().required('Last name is required'),
             email: Yup.string().email('Invalid email address').required('Email is required'),
             phone: Yup.number().required('Phone number is required'),
-            address: Yup.string().required('Address is required'),
             sponsorship_code_used: Yup.string()
         }),
         onSubmit: values => {
@@ -174,18 +172,7 @@ function ProfilePage() {
                                     helperText={formik.touched.phone && formik.errors.phone}
                                 />
                             </Grid>
-                            <Grid item lg={6} md={6} sm={12}>
-                                <TextField
-                                    fullWidth
-                                    label="Address"
-                                    name="address"
-                                    value={formik.values.address}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.address && Boolean(formik.errors.address)}
-                                    helperText={formik.touched.address && formik.errors.address}
-                                />
-                            </Grid>
-                            <Grid item lg={6} md={6} sm={12}>
+                            <Grid item lg={12} md={12} sm={12}>
                                 <TextField
                                     fullWidth
                                     disabled
