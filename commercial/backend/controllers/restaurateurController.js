@@ -1,4 +1,5 @@
 const Restaurateur = require('../models/Restaurateur');
+const users = require('../SQLmodels/users');
 
 exports.createRestaurateur = async (req, res) => {
   try {
@@ -21,7 +22,7 @@ exports.getRestaurateurs = async (req, res) => {
 
 exports.getRestaurateurById = async (req, res) => {
   try {
-    const restaurateur = await Restaurateur.findById(req.params.id);
+    const restaurateur = await Restaurateur.findOne({ID_user: req.params.id});
     if (!restaurateur) return res.status(404).json({ error: 'Restaurateur not found' });
     res.status(200).json(restaurateur);
   } catch (err) {

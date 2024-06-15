@@ -1,21 +1,24 @@
 {
   "development": {
     "username": "root",
-    "password": "Mohamed3005?",
+    "password": "1627",
+
     "database": "advanced-web-project",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },
   "test": {
     "username": "root",
-    "password": "Mohamed3005?",
+    "password": "1627",
+
     "database": "advanced-web-project",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },
   "production": {
     "username": "root",
-    "password": "Mohamed3005?",
+    "password": "1627",
+
     "database": "advanced-web-project",
     "host": "127.0.0.1",
     "dialect": "mysql"
