@@ -1,4 +1,7 @@
 import { Navigate, useRoutes } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from "./helpers/AuthContext";
+
 // layouts
 import DashboardLayout from './layouts/dashboard';
 import SimpleLayout from './layouts/simple';
@@ -9,30 +12,43 @@ import LoginPage from './pages/LoginPage';
 import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
+import ArticlesPage from "./pages/ArticlesPage"
+import MenusPage from './pages/MenusPage';
+import OrdersPage from './pages/OrdersPage';
+import ProfilePage from './pages/ProfilePage';
+import SignUpPage from './pages/SignUpPage';
 
 // ----------------------------------------------------------------------
 
 export default function Router() {
+  const { authState } = useContext(AuthContext);
+  const isAuthenticated = authState.isAuthenticated;
+  console.log(authState);
+  
   const routes = useRoutes([
     {
       path: '/dashboard',
-      element: <DashboardLayout />,
+      element: isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" />,
       children: [
         { element: <Navigate to="/dashboard/app" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
-        { path: 'user', element: <UserPage /> },
-        { path: 'products', element: <ProductsPage /> },
-        { path: 'blog', element: <BlogPage /> },
+        { path: 'profile', element: <ProfilePage /> },
+        { path: 'orders', element: <OrdersPage /> },
+        
       ],
     },
     {
       path: 'login',
-      element: <LoginPage />,
+      element: isAuthenticated ? <Navigate to="/dashboard/app" /> : <LoginPage />,
+    },
+    {
+      path: 'signup',
+      element: isAuthenticated ? <Navigate to="/dashboard/app" /> : <SignUpPage />,
     },
     {
       element: <SimpleLayout />,
       children: [
-        { element: <Navigate to="/dashboard/app" />, index: true },
+        { element: <Navigate to={isAuthenticated ? "/dashboard/app" : "/login"} />, index: true },
         { path: '404', element: <Page404 /> },
         { path: '*', element: <Navigate to="/404" /> },
       ],

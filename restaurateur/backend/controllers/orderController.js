@@ -3,10 +3,11 @@ const Restaurateur =require('../models/Restaurateur');
 const {User} = require('../SQLmodels/users')
 exports.createOrder = async (req, res) => {
   try {
-    const { price, state, notif_res, notif_cli, notif_del, Menu, Article, Client, Restaurateur, Delivery } = req.body;
+    const { price, del_price, state, notif_res, notif_cli, notif_del, Menu, Article, Client, Restaurateur, Delivery } = req.body;
 
     const order = new Order({
       price,
+      del_price,
       state,
       notif_res,
       notif_cli,
@@ -136,10 +137,11 @@ exports.getOrderById = async (req, res) => {
 
 exports.updateOrder = async (req, res) => {
   try {
-    const { price, state, notif_res, notif_cli, notif_del, Menu, Article, Client, Restaurateur, Delivery } = req.body;
+    const { price, del_price, state, notif_res, notif_cli, notif_del, Menu, Article, Client, Restaurateur, Delivery } = req.body;
 
     const updateData = {
       price,
+      del_price,
       state,
       notif_res,
       notif_cli,
