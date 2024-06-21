@@ -108,7 +108,7 @@ export default function OrderPage() {
   const userInfo = authState.userInfo;
 
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/order/restaurateur/${userInfo.id}`, {
+    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/order`, {
       headers: {
         accessToken: localStorage.getItem('accessToken'),
         apikey: process.env.REACT_APP_API_KEY,

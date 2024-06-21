@@ -28,6 +28,7 @@ export default function DashboardAppPage() {
   const [orders, setOrders] = useState([]);
   const [statistics, setStatistics] = useState({
     totalSales: 0,
+    totalSalesToday: 0,
     totalOrders: 0,
     totalNewOrders: 0,
     totalCanceledOrders: 0,
@@ -40,10 +41,9 @@ export default function DashboardAppPage() {
     ordersInProgress: 0,
     ordersByDayOfWeek: [],
   });
-  
 
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/order/restaurateur/${userInfo.id}`, {
+    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/order`, {
       headers: {
         accessToken: localStorage.getItem('accessToken'),
         apikey: process.env.REACT_APP_API_KEY,
@@ -66,6 +66,7 @@ export default function DashboardAppPage() {
 
   const calculateStatistics = (orders) => {
     let totalSales = 0;
+    let totalSalesToday = 0;
     let totalSalesThisMonth = 0;
     let totalSalesThisYear = 0;
     const totalOrders = orders.length;
@@ -78,16 +79,23 @@ export default function DashboardAppPage() {
     const categoryCounts = {};
     const ordersByDayOfWeek = Array(7).fill(0); // Initialize array to hold orders for each day of the week
   
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
+    const currentDate = new Date();
+    const currentDay = currentDate.getDate();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
   
     orders.forEach(order => {
       const orderDate = new Date(order.createdAt);
+      const orderDay = orderDate.getDate();
       const orderMonth = orderDate.getMonth();
       const orderYear = orderDate.getFullYear();
-      const orderDay = orderDate.getDay(); // Get the day of the week (0-6, where 0 is Sunday)
+      const orderWeekDay = orderDate.getDay(); // Get the day of the week (0-6, where 0 is Sunday)
   
       totalSales += order.price;
+
+      if (orderDay === currentDay && orderMonth === currentMonth && orderYear === currentYear) {
+        totalSalesToday += order.price;
+      }
   
       if (orderMonth === currentMonth && orderYear === currentYear) {
         totalSalesThisMonth += order.price;
@@ -116,7 +124,7 @@ export default function DashboardAppPage() {
       }
   
       // Increment the count for the corresponding day of the week
-      ordersByDayOfWeek[orderDay] += 1;
+      ordersByDayOfWeek[orderWeekDay] += 1;
   
       order.Menu.forEach(menuItem => {
         menuItem.menuId.Article.forEach(article => {
@@ -145,6 +153,7 @@ export default function DashboardAppPage() {
   
     setStatistics({
       totalSales,
+      totalSalesToday,
       totalOrders,
       totalNewOrders,
       totalCanceledOrders,
@@ -158,7 +167,6 @@ export default function DashboardAppPage() {
       ordersByDayOfWeek,
     });
   };
-  
 
   return (
     <>
@@ -177,15 +185,15 @@ export default function DashboardAppPage() {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
+            <AppWidgetSummary title="Total Sales Today" total={statistics.totalSalesToday} color="primary" icon={'ant-design:calendar-filled'} />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
             <AppWidgetSummary title="Total Sales This Year" total={statistics.totalSalesThisYear} color="secondary" icon={'ant-design:calendar-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
             <AppWidgetSummary title="Total Sales This Month" total={statistics.totalSalesThisMonth} color="warning" icon={'ant-design:calendar-filled'} />
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Total Orders" total={statistics.totalOrders} icon={'ant-design:shopping-cart-outlined'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
@@ -204,47 +212,6 @@ export default function DashboardAppPage() {
             <AppWidgetSummary title="Orders in Progress" total={statistics.ordersInProgress} color="info" icon={'ant-design:sync-outlined'} />
           </Grid>
 
-          {/* <Grid item xs={12} md={6} lg={8}>
-            <AppWebsiteVisits
-              title="Website Visits"
-              subheader="(+43%) than last year"
-              chartLabels={[
-                '01/01/2003',
-                '02/01/2003',
-                '03/01/2003',
-                '04/01/2003',
-                '05/01/2003',
-                '06/01/2003',
-                '07/01/2003',
-                '08/01/2003',
-                '09/01/2003',
-                '10/01/2003',
-                '11/01/2003',
-              ]}
-              chartData={[
-                {
-                  name: 'Team A',
-                  type: 'column',
-                  fill: 'solid',
-                  data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30],
-                },
-                {
-                  name: 'Team B',
-                  type: 'area',
-                  fill: 'gradient',
-                  data: [44, 55, 41, 67, 22, 43, 21, 41, 56, 27, 43],
-                },
-                {
-                  name: 'Team C',
-                  type: 'line',
-                  fill: 'solid',
-                  data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39],
-                },
-              ]}
-            />
-          </Grid> */}
-
-
           <Grid item xs={12} md={12} lg={12}>
             <AppConversionRates
               title="Orders by Day of the Week"
@@ -252,7 +219,6 @@ export default function DashboardAppPage() {
               chartData={statistics.ordersByDayOfWeek}
             />
           </Grid>
-
 
           <Grid item xs={12} md={6} lg={6}>
             <AppCurrentVisits
@@ -268,7 +234,6 @@ export default function DashboardAppPage() {
             />
           </Grid>
 
-
           <Grid item xs={12} md={6} lg={6}>
             <AppCurrentSubject
               title="Most Ordered Categories"
@@ -282,81 +247,6 @@ export default function DashboardAppPage() {
               chartColors={[...Array(statistics.categoryData.length)].map(() => theme.palette.text.secondary)}
             />
           </Grid>
-
-          
-          
-
-          {/* <Grid item xs={12} md={6} lg={8}>
-            <AppNewsUpdate
-              title="News Update"
-              list={[...Array(5)].map((_, index) => ({
-                id: faker.datatype.uuid(),
-                title: faker.name.jobTitle(),
-                description: faker.name.jobTitle(),
-                image: `/assets/images/covers/cover_${index + 1}.jpg`,
-                postedAt: faker.date.recent(),
-              }))}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={4}>
-            <AppOrderTimeline
-              title="Order Timeline"
-              list={[...Array(5)].map((_, index) => ({
-                id: faker.datatype.uuid(),
-                title: [
-                  '1983, orders, $4220',
-                  '12 Invoices have been paid',
-                  'Order #37745 from September',
-                  'New order placed #XF-2356',
-                  'New order placed #XF-2346',
-                ][index],
-                type: `order${index + 1}`,
-                time: faker.date.past(),
-              }))}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={4}>
-            <AppTrafficBySite
-              title="Traffic by Site"
-              list={[
-                {
-                  name: 'FaceBook',
-                  value: 323234,
-                  icon: <Iconify icon={'eva:facebook-fill'} color="#1877F2" width={32} />,
-                },
-                {
-                  name: 'Google',
-                  value: 341212,
-                  icon: <Iconify icon={'eva:google-fill'} color="#DF3E30" width={32} />,
-                },
-                {
-                  name: 'Linkedin',
-                  value: 411213,
-                  icon: <Iconify icon={'eva:linkedin-fill'} color="#006097" width={32} />,
-                },
-                {
-                  name: 'Twitter',
-                  value: 443232,
-                  icon: <Iconify icon={'eva:twitter-fill'} color="#1C9CEA" width={32} />,
-                },
-              ]}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={8}>
-            <AppTasks
-              title="Tasks"
-              list={[
-                { id: '1', label: 'Create FireStone Logo' },
-                { id: '2', label: 'Add SCSS and JS files if required' },
-                { id: '3', label: 'Stakeholder Meeting' },
-                { id: '4', label: 'Scoping & Estimations' },
-                { id: '5', label: 'Sprint Showcase' },
-              ]}
-            />
-          </Grid> */}
         </Grid>
       </Container>
     </>

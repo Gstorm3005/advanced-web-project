@@ -10,30 +10,13 @@ import { AuthContext } from "../helpers/AuthContext";
 function ProfilePage() {
     const { authState } = useContext(AuthContext);
     const userInfo = authState.userInfo;
-    const [user, setUser] = useState({});
     const [userSQL, setUserSQL] = useState({});
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarContent, setSnackbarContent] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_IP_ADDRESS}/restaurateurs/${userInfo.id}`, {
-          headers: {
-            accessToken: localStorage.getItem("accessToken"),
-            apikey: process.env.REACT_APP_API_KEY,
-          },
-        })
-        .then((response) => {
-          if (response.data.error) {
-            console.error(response.data.error);
-          } else {
-            console.log(response.data);
-            setUser(response.data);
-          }
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+        
         axios.get(`http://localhost:5000/auth/api/check`, { headers: { accessToken: localStorage.getItem("accessToken"), apikey: process.env.REACT_APP_API_KEY, role: process.env.REACT_APP_ROLE } }).then((response) => {
             if (response.data.error) {
                 setUserSQL({});
@@ -69,21 +52,14 @@ function ProfilePage() {
             last_name: userSQL.last_name || '',
             email: userSQL.email || '',
             phone: userSQL.phone || '',
-            address: user.address || '',
-            sponsorship_code_used: user.sponsorship_code_used || ''
         },
         validationSchema: Yup.object({
             first_name: Yup.string().required('First name is required'),
             last_name: Yup.string().required('Last name is required'),
             email: Yup.string().email('Invalid email address').required('Email is required'),
             phone: Yup.number().required('Phone number is required'),
-            address: Yup.string().required('Address is required'),
-            sponsorship_code_used: Yup.string()
         }),
         onSubmit: values => {
-            if(values.sponsorship_code_used === ""){
-                values.sponsorship_code_used = 'none';
-            }
             
             axios.put(`http://localhost:5000/auth/api/user/${userInfo.id}`, values,{
                 headers: {
@@ -174,42 +150,7 @@ function ProfilePage() {
                                     helperText={formik.touched.phone && formik.errors.phone}
                                 />
                             </Grid>
-                            <Grid item lg={6} md={6} sm={12}>
-                                <TextField
-                                    fullWidth
-                                    label="Address"
-                                    name="address"
-                                    value={formik.values.address}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.address && Boolean(formik.errors.address)}
-                                    helperText={formik.touched.address && formik.errors.address}
-                                />
-                            </Grid>
-                            <Grid item lg={6} md={6} sm={12}>
-                                <TextField
-                                    fullWidth
-                                    disabled
-                                    label="Sponsorship Code Used"
-                                    name="sponsorship_code_used"
-                                    value={formik.values.sponsorship_code_used}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.sponsorship_code_used && Boolean(formik.errors.sponsorship_code_used)}
-                                    helperText={formik.touched.sponsorship_code_used && formik.errors.sponsorship_code_used}
-                                />
-                            </Grid>
-                            <Grid item lg={12} md={12} sm={12}>
-                                <Box display="flex" alignItems="center">
-                                    <Typography>
-                                    Sponsorship Code Owned: 
-                                    </Typography>
-                                    <Typography
-                                        onClick={() => handleCopy(user.sponsorship_code_owned)}
-                                        style={{ cursor: 'pointer', marginLeft: '10px' }}
-                                    >
-                                        {user.sponsorship_code_owned} <ContentCopyIcon fontSize="small" sx={{ pt: 0.5 }} color="action" />
-                                    </Typography>
-                                </Box>
-                            </Grid>
+                            
                         </Grid>
                         <Box mt={2}>
                             <Button type="submit" variant="contained" color="primary" fullWidth>
