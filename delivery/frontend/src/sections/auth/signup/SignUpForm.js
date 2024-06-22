@@ -43,7 +43,11 @@ export default function SignUpForm() {
     validationSchema: Yup.object({
       first_name: Yup.string().required('First name is required'),
       last_name: Yup.string().required('Last name is required'),
+<<<<<<< HEAD
+      phone: Yup.string().required('Phone number is required'),
+=======
       phone: Yup.number().required('Phone number is required'),
+>>>>>>> bc0f99a1c1633a1e3b9a17d81669a4dd9903dada
       email: Yup.string().email('Invalid email address').required('Email is required'),
       password: Yup.string().required('Password is required'),
     }),

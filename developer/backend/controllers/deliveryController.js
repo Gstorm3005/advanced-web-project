@@ -21,8 +21,8 @@ exports.getDeliverys = async (req, res) => {
 
 exports.getDeliveryById = async (req, res) => {
   try {
-    const delivery = await Delivery.findById(req.params.id);
-    if (!delivery) return res.status(404).json({ error: 'Delivery not found' });
+    const delivery = await Delivery.findOne({ID_user: req.params.id});
+    if (!delivery) return res.status(404).json({ error: 'Delivery account not found' });
     res.status(200).json(delivery);
   } catch (err) {
     res.status(400).json({ error: err.message });
