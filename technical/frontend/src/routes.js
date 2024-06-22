@@ -15,6 +15,7 @@ import DashboardAppPage from './pages/DashboardAppPage';
 import ArticlesPage from "./pages/ArticlesPage"
 import MenusPage from './pages/MenusPage';
 import OrdersPage from './pages/OrdersPage';
+import LogsPage from './pages/LogsPage';
 import ProfilePage from './pages/ProfilePage';
 import SignUpPage from './pages/SignUpPage';
 
@@ -38,6 +39,7 @@ export default function Router() {
         { path: 'articles', element: <ArticlesPage /> },
         { path: 'menus', element: <MenusPage /> },
         { path: 'orders', element: <OrdersPage /> },
+        { path: 'logs', element: <LogsPage /> },
         { path: 'blog', element: <BlogPage /> },
       ],
     },
