@@ -38,16 +38,12 @@ export default function SignUpForm() {
       phone: '',
       email: '',
       password: '',
-      address: '',
-      sponsorship_code_used: '',
     },
     validationSchema: Yup.object({
       first_name: Yup.string().required('First name is required'),
       last_name: Yup.string().required('Last name is required'),
       phone: Yup.number().required('Phone number is required'),
       email: Yup.string().email('Invalid email address').required('Email is required'),
-      password: Yup.string().required('Password is required'),
-      address: Yup.string().required('Address is required'),
     }),
     onSubmit: (values) => {
       axios.post(`http://localhost:5000/auth/api/signup`, values, {
@@ -132,24 +128,6 @@ export default function SignUpForm() {
                 </InputAdornment>
               ),
             }}
-          />
-
-          <TextField
-            name="address"
-            label="Address"
-            value={formik.values.address}
-            onChange={formik.handleChange}
-            error={formik.touched.address && Boolean(formik.errors.address)}
-            helperText={formik.touched.address && formik.errors.address}
-          />
-
-          <TextField
-            name="sponsorship_code_used"
-            label="Sponsorship Code"
-            value={formik.values.sponsorship_code_used}
-            onChange={formik.handleChange}
-            error={formik.touched.sponsorship_code_used && Boolean(formik.errors.sponsorship_code_used)}
-            helperText={formik.touched.sponsorship_code_used && formik.errors.sponsorship_code_used}
           />
 
           <Collapse in={serverError !== ""}>
