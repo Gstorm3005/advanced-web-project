@@ -1,20 +1,21 @@
 import { useContext, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { Box, Card, Paper, Typography, CardHeader, CardContent, Container, TextField, Grid, Button, Snackbar, Alert } from '@mui/material';
 import axios from 'axios';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../helpers/AuthContext";
 
 function ProfilePage() {
-    const { authState } = useContext(AuthContext);
+    const { authState, setAuthState } = useContext(AuthContext); // Added setAuthState to update auth state
     const userInfo = authState.userInfo;
     const [user, setUser] = useState({});
     const [userSQL, setUserSQL] = useState({});
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarContent, setSnackbarContent] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+    const navigate = useNavigate();
 
     useEffect(() => {
         axios.get(`${process.env.REACT_APP_IP_ADDRESS}/delivery/${userInfo.id}`, {
@@ -107,6 +108,35 @@ function ProfilePage() {
               });
         }
     });
+
+    const handleDelete = () => {
+        axios.delete(`http://localhost:5000/auth/api/user/${userInfo.id}`, {
+            headers: {
+                accessToken: localStorage.getItem("accessToken"),
+                apikey: process.env.REACT_APP_API_KEY,
+            },
+        }).then((response) => {
+            if (response.data.error) {
+                setSnackbarContent(response.data.error);
+                setSnackbarSeverity("error");
+            } else {
+                setSnackbarContent('Account deleted successfully');
+                setSnackbarSeverity("success");
+                localStorage.removeItem("accessToken")
+                setAuthState({ // Reset the auth state
+                    userInfo: null,
+                    isAuthenticated: false
+                  });
+                navigate("/login")
+            }
+            setSnackbarOpen(true);
+        }).catch((error) => {
+            console.error(error);
+            setSnackbarContent('An error occurred. Please try again.');
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        });
+    };
 
     const handleCopy = (text) => {
         navigator.clipboard.writeText(text);
@@ -201,6 +231,11 @@ function ProfilePage() {
                         <Box mt={2}>
                             <Button type="submit" variant="contained" color="primary" fullWidth>
                                 Save
+                            </Button>
+                        </Box>
+                        <Box mt={2}>
+                            <Button variant="contained" color="error" onClick={handleDelete} fullWidth>
+                                Delete
                             </Button>
                         </Box>
                     </form>

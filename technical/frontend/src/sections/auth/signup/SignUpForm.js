@@ -44,7 +44,7 @@ export default function SignUpForm() {
     validationSchema: Yup.object({
       first_name: Yup.string().required('First name is required'),
       last_name: Yup.string().required('Last name is required'),
-      phone: Yup.string().required('Phone number is required'),
+      phone: Yup.number().required('Phone number is required'),
       email: Yup.string().email('Invalid email address').required('Email is required'),
       password: Yup.string().required('Password is required'),
       address: Yup.string().required('Address is required'),
