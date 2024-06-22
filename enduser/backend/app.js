@@ -7,10 +7,9 @@ const productRoutes = require('./routes/productRoutes');
 const articleRoutes = require('./routes/articleRoutes');
 const clientRoutes = require('./routes/clientRoutes');
 const restaurateurRoutes = require('./routes/restaurateurRoutes');
-const livreurRoutes = require('./routes/livreurRoutes');
+const deliveryRoutes = require('./routes/deliveryRoutes');
 const menuRoutes = require('./routes/menuRoutes');
-const commandeRoutes = require('./routes/commandeRoutes');
-const notifLivreurRoutes = require('./routes/notifLivreurRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 
 const app = express();
 
@@ -29,10 +28,9 @@ app.use('/api/products', productRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/restaurateurs', restaurateurRoutes);
-app.use('/api/livreurs', livreurRoutes);
+app.use('/api/delivery', deliveryRoutes);
 app.use('/api/menus', menuRoutes);
-app.use('/api/commandes', commandeRoutes);
-app.use('/api/notif_livreurs', notifLivreurRoutes);
+app.use('/api/orders', orderRoutes);
 
 const PORT = 5001;
 app.listen(PORT, () => {
