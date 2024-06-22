@@ -63,7 +63,7 @@ exports.delete = async (req, res) => {
                     break;
             }
 
-            res.status(200).json({ message: 'User and associated records deleted' });
+            res.status(200).json({ message: 'User deleted' });
         } else {
             res.status(404).json({ error: 'User not found' });
         }

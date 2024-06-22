@@ -1,20 +1,35 @@
 import { useContext, useState, useEffect } from 'react';
+<<<<<<< HEAD
 import { Link } from 'react-router-dom';
+=======
+>>>>>>> bc0f99a1c1633a1e3b9a17d81669a4dd9903dada
 import { Box, Card, Paper, Typography, CardHeader, CardContent, Container, TextField, Grid, Button, Snackbar, Alert } from '@mui/material';
 import axios from 'axios';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+<<<<<<< HEAD
 import { AuthContext } from "../helpers/AuthContext";
 
 function ProfilePage() {
     const { authState } = useContext(AuthContext);
+=======
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../helpers/AuthContext";
+
+function ProfilePage() {
+    const { authState, setAuthState } = useContext(AuthContext); // Added setAuthState to update auth state
+>>>>>>> bc0f99a1c1633a1e3b9a17d81669a4dd9903dada
     const userInfo = authState.userInfo;
     const [user, setUser] = useState({});
     const [userSQL, setUserSQL] = useState({});
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarContent, setSnackbarContent] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+<<<<<<< HEAD
+=======
+    const navigate = useNavigate();
+>>>>>>> bc0f99a1c1633a1e3b9a17d81669a4dd9903dada
 
     useEffect(() => {
         axios.get(`${process.env.REACT_APP_IP_ADDRESS}/delivery/${userInfo.id}`, {
@@ -108,6 +123,38 @@ function ProfilePage() {
         }
     });
 
+<<<<<<< HEAD
+=======
+    const handleDelete = () => {
+        axios.delete(`http://localhost:5000/auth/api/user/${userInfo.id}`, {
+            headers: {
+                accessToken: localStorage.getItem("accessToken"),
+                apikey: process.env.REACT_APP_API_KEY,
+            },
+        }).then((response) => {
+            if (response.data.error) {
+                setSnackbarContent(response.data.error);
+                setSnackbarSeverity("error");
+            } else {
+                setSnackbarContent('Account deleted successfully');
+                setSnackbarSeverity("success");
+                localStorage.removeItem("accessToken")
+                setAuthState({ // Reset the auth state
+                    userInfo: null,
+                    isAuthenticated: false
+                  });
+                navigate("/login")
+            }
+            setSnackbarOpen(true);
+        }).catch((error) => {
+            console.error(error);
+            setSnackbarContent('An error occurred. Please try again.');
+            setSnackbarSeverity("error");
+            setSnackbarOpen(true);
+        });
+    };
+
+>>>>>>> bc0f99a1c1633a1e3b9a17d81669a4dd9903dada
     const handleCopy = (text) => {
         navigator.clipboard.writeText(text);
         alert('Sponsorship code copied to clipboard');
@@ -203,6 +250,14 @@ function ProfilePage() {
                                 Save
                             </Button>
                         </Box>
+<<<<<<< HEAD
+=======
+                        <Box mt={2}>
+                            <Button variant="contained" color="error" onClick={handleDelete} fullWidth>
+                                Delete
+                            </Button>
+                        </Box>
+>>>>>>> bc0f99a1c1633a1e3b9a17d81669a4dd9903dada
                     </form>
                 </CardContent>
             </Card>
