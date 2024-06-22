@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 // @mui
 import { Container, Stack, Typography } from '@mui/material';
 // components
@@ -11,6 +12,10 @@ import PRODUCTS from '../_mock/products';
 
 export default function ProductsPage() {
   const [openFilter, setOpenFilter] = useState(false);
+  const [selected, setSelected] = useState("articles");
+  const [menus, setMenus] = useState([]);
+  const [articles, setArticles] = useState([]);
+  const [products, setProducts] = useState([]);
 
   const handleOpenFilter = () => {
     setOpenFilter(true);
@@ -20,6 +25,51 @@ export default function ProductsPage() {
     setOpenFilter(false);
   };
 
+  const handleSelect = (selection) => {
+    setSelected(selection)
+    if(selection==="articles"){
+      setProducts(articles)
+    }else if(selection==="menus"){
+      setProducts(menus)
+    }
+  }
+  useEffect(() => {
+    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/menus`, {
+      headers: {
+        accessToken: localStorage.getItem("accessToken"),
+        apikey: process.env.REACT_APP_API_KEY,
+      },
+    })
+    .then((response) => {
+      if (response.data.error) {
+        console.error(response.data.error);
+      } else {
+        setMenus(response.data);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+      // Handle the error, e.g., redirect to an error page or show a relevant message to the user.
+    });
+    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/articles`, {
+      headers: {
+        accessToken: localStorage.getItem("accessToken"),
+        apikey: process.env.REACT_APP_API_KEY,
+      },
+    })
+    .then((response) => {
+      if (response.data.error) {
+        console.error(response.data.error);
+      } else {
+        setArticles(response.data);
+        setProducts(response.data)
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+      // Handle the error, e.g., redirect to an error page or show a relevant message to the user.
+    });
+  }, []);
   return (
     <>
       <Helmet>
@@ -38,11 +88,11 @@ export default function ProductsPage() {
               onOpenFilter={handleOpenFilter}
               onCloseFilter={handleCloseFilter}
             />
-            <ProductSort />
+            <ProductSort handleSelect={handleSelect} selected={selected} />
           </Stack>
         </Stack>
 
-        <ProductList products={PRODUCTS} />
+        <ProductList products={products} selected={selected} />
         <ProductCartWidget />
       </Container>
     </>

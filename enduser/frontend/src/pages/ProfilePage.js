@@ -18,7 +18,7 @@ function ProfilePage() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_IP_ADDRESS}/restaurateurs/${userInfo.id}`, {
+        axios.get(`${process.env.REACT_APP_IP_ADDRESS}/clients/${userInfo.id}`, {
           headers: {
             accessToken: localStorage.getItem("accessToken"),
             apikey: process.env.REACT_APP_API_KEY,

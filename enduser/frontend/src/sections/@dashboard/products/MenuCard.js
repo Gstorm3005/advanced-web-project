@@ -1,13 +1,14 @@
 import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
 // @mui
-import { Box, Card, Link, Typography, Stack } from '@mui/material';
+import { Box, Card, Link, Typography, Stack, Popover, Grid } from '@mui/material';
 import { styled } from '@mui/material/styles';
 // utils
 import { fCurrency } from '../../../utils/formatNumber';
 // components
 import Label from '../../../components/label';
 import { ColorPreview } from '../../../components/color-utils';
-
+import MenuDialog from './MenuDialog'
 // ----------------------------------------------------------------------
 
 const StyledProductImg = styled('img')({
@@ -21,16 +22,28 @@ const StyledProductImg = styled('img')({
 // ----------------------------------------------------------------------
 
 ShopProductCard.propTypes = {
-  product: PropTypes.object,
+  product: PropTypes.object.isRequired,
 };
 
-export default function ShopProductCard({ product, selected }) {
-  const { name, path, price, category, status, priceSale } = product;
+export default function ShopProductCard({ product }) {
+  const [openDialog, setOpenDialog] = useState(false)
+  const { name, path, price, status, Article } = product;
+
+
+  const handleClick = (event) => {
+    setOpenDialog(true)
+    
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false)
+  };
+
 
   return (
     <Card>
       <Box sx={{ pt: '100%', position: 'relative' }}>
-        {/* {status && (
+        {status && (
           <Label
             variant="filled"
             color={(status === 'sale' && 'error') || 'info'}
@@ -44,36 +57,26 @@ export default function ShopProductCard({ product, selected }) {
           >
             {status}
           </Label>
-        )} */}
+        )}
         <StyledProductImg alt={name} src={`http://localhost:5010/uploads/${path}`} />
       </Box>
 
       <Stack spacing={2} sx={{ p: 3 }}>
-        <Link color="inherit" underline="hover">
+        <Link color="inherit" underline="hover" onClick={handleClick}>
           <Typography variant="subtitle2" noWrap>
             {name}
           </Typography>
         </Link>
 
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          {/* <ColorPreview colors={colors} /> */}
-          {category}
           <Typography variant="subtitle1">
-            {/* <Typography
-              component="span"
-              variant="body1"
-              sx={{
-                color: 'text.disabled',
-                textDecoration: 'line-through',
-              }}
-            >
-              {priceSale && fCurrency(priceSale)}
-            </Typography> */}
             &nbsp;
             {fCurrency(price)}
           </Typography>
         </Stack>
       </Stack>
+      <MenuDialog open={openDialog} handleClose={handleCloseDialog} Article={Article} />
+     
     </Card>
   );
 }
