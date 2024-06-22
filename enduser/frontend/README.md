@@ -1,65 +1,40 @@
-<h2 align="center">E-Commerce Template</h2>
+## Minimal [(Free version)](https://minimal-kit-react.vercel.app/)
 
-<p align="center">
- Built with React JS, Bootstrap 5
-  <br>
-  <a href="https://e-commerce-template.surge.sh/" target="_blank"><strong>Demo »</strong></a>
-  <br>
-  <br>
+![license](https://img.shields.io/badge/license-MIT-blue.svg)
 
-## E-Commerce Template
+> Free React Admin Dashboard made with Material-UI components and React.
 
-Built with React JS and Bootstrap 5
+![preview](public/assets/preview.jpg)
 
-## Table of contents
+| [Minimal Free](https://minimal-kit-react.vercel.app/) | [Minimal](https://material-ui.com/store/items/minimal-dashboard/) |
+| ----------------------------------------------------- | :---------------------------------------------------------------- |
+| **6** Demo pages                                      | **50+** demo pages                                                |
+| -                                                     | ✓ Multi-language                                                  |
+| -                                                     | ✓ Dark/Light Mode 🌓                                              |
+| -                                                     | ✓ [More components](https://minimals.cc/components)               |
+| -                                                     | ✓ Next.js version                                                 |
+| -                                                     | ✓ TypeScript version                                              |
+| -                                                     | ✓ Design files (Figma & Sketch)                                   |
 
-- [Quick start](#quick-start)
-- [What's included](#whats-included)
-- [Thanks](#thanks)
-- [Copyright and license](#copyright-and-license)
+## Page demo
 
-## Quick start
+- [Dashboard](https://minimal-kit-react.vercel.app/dashboard/app)
+- [Users](https://minimal-kit-react.vercel.app/dashboard/user)
+- [Product](https://minimal-kit-react.vercel.app/dashboard/products)
+- [Blog](https://minimal-kit-react.vercel.app/dashboard/blog)
+- [Login](https://minimal-kit-react.vercel.app/login)
+- [Not Found](https://minimal-kit-react.vercel.app/404)
 
-Several quick start options are available:
+## Getting started
 
-- [Download the latest branch](https://github.com/bhaumikpatel/E-Commerce-Template)
-- Clone the repo: `git clone https://github.com/bhaumikpatel/E-Commerce-Template.git`
-- Install with [npm](https://www.npmjs.com/): `npm install`
-- Runs the app in the development mode `npm start`
-- Builds the app for production to the `build` folder `npm run build`
+- Recommended `node js 16.x` and `npm 6+`. (suggestion v16.15.0)
+- Install dependencies: `npm install` / `yarn install`
+- Start the project: `npm run start` / `yarn start`
 
-## What's included
+## License
 
-- Sign Up
-- Sign In
-- Forgot Password
-- Home Page
-- Product List (List/Grid View)
-- Product Detail
-- Cart
-- Checkout
-- Invoice
-- My Account (Change Password, Setting, Saved Card)
-- Star Zone Page
-- Orders
-- Wishlist's
-- Notification
-- Support
-- Contact Us
-- Blog
-- Blog Detail Page
-- Error Page (404, 500)
+Distributed under the MIT License. See [LICENSE](https://github.com/minimal-ui-kit/minimal.free/blob/main/LICENSE.md) for more information.
 
-## Thanks
+## Contact us
 
-<a href="https://www.getbootstrap.com/" title="Bootstrap" target="_blank">
-  <img src="https://skillicons.dev/icons?i=bootstrap" alt="Bootstrap Logo">
-</a>
-<a href="https://reactjs.org/" title="React JS" target="_blank"><img src="https://skillicons.dev/icons?i=react" alt="React Logo">
-</a>
-<a href="https://fontawesome.com/" title="Font Awesome" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Font_Awesome_logomark_blue.svg" alt="Font Awesome Logo" width="48" height="48">
-</a>
-  
-## Copyright and license
-
-Code released under the [MIT License](https://github.com/twbs/bootstrap/blob/main/LICENSE). Docs released under [Creative Commons](https://creativecommons.org/licenses/by/3.0/).
+Email Us: support@minimals.cc

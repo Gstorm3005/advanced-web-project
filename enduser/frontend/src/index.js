@@ -1,26 +1,20 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-//import "./index.css";
-import App from "./App";
-import * as serviceWorker from "./serviceWorker";
-import { createStore } from "redux";
-import { Provider } from "react-redux";
-import rootReducer from "./reducers";
-import { loadState, saveState } from "./localStorage";
-const persistedState = loadState();
-const store = createStore(rootReducer, persistedState);
+import ReactDOM from 'react-dom/client';
 
-store.subscribe(() => {
-  saveState(store);
-});
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
-  <Provider store={store}>
-    <App />
-  </Provider>
-);
+//
+import App from './App';
+import * as serviceWorker from './serviceWorker';
+import reportWebVitals from './reportWebVitals';
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.register();
+// ----------------------------------------------------------------------
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+root.render(<App />);
+
+// If you want to enable client cache, register instead.
+serviceWorker.unregister();
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
