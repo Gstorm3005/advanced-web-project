@@ -35,7 +35,7 @@ function ProfilePage() {
         .catch((error) => {
           console.error(error);
         });
-        axios.get(`http://localhost:5000/auth/api/check`, { headers: { accessToken: localStorage.getItem("accessToken"), apikey: process.env.REACT_APP_API_KEY, role: process.env.REACT_APP_ROLE } }).then((response) => {
+        axios.get(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/check`, { headers: { accessToken: localStorage.getItem("accessToken"), apikey: process.env.REACT_APP_API_KEY, role: process.env.REACT_APP_ROLE } }).then((response) => {
             if (response.data.error) {
                 setUserSQL({});
             } else {
@@ -70,23 +70,16 @@ function ProfilePage() {
             last_name: userSQL.last_name || '',
             email: userSQL.email || '',
             phone: userSQL.phone || '',
-            address: user.address || '',
-            sponsorship_code_used: user.sponsorship_code_used || ''
         },
         validationSchema: Yup.object({
             first_name: Yup.string().required('First name is required'),
             last_name: Yup.string().required('Last name is required'),
             email: Yup.string().email('Invalid email address').required('Email is required'),
             phone: Yup.number().required('Phone number is required'),
-            address: Yup.string().required('Address is required'),
-            sponsorship_code_used: Yup.string()
         }),
         onSubmit: values => {
-            if(values.sponsorship_code_used === ""){
-                values.sponsorship_code_used = 'none';
-            }
             
-            axios.put(`http://localhost:5000/auth/api/user/${userInfo.id}`, values,{
+            axios.put(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${userInfo.id}`, values,{
                 headers: {
                   accessToken: localStorage.getItem("accessToken"),
                   apikey: process.env.REACT_APP_API_KEY,
@@ -99,6 +92,13 @@ function ProfilePage() {
                 } else {
                   setSnackbarContent(response.data.message);
                   setSnackbarSeverity("success");
+                  localStorage.removeItem("accessToken")
+                  setAuthState({ // Reset the auth state
+                    userInfo: null,
+                    isAuthenticated: false
+                  });
+                  navigate("/login")
+
                 }
                 setSnackbarOpen(true);
               })
@@ -112,7 +112,7 @@ function ProfilePage() {
     });
 
     const handleDelete = () => {
-        axios.delete(`http://localhost:5000/auth/api/user/${userInfo.id}`, {
+        axios.delete(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${userInfo.id}`, {
             headers: {
                 accessToken: localStorage.getItem("accessToken"),
                 apikey: process.env.REACT_APP_API_KEY,
@@ -203,42 +203,6 @@ function ProfilePage() {
                                     error={formik.touched.phone && Boolean(formik.errors.phone)}
                                     helperText={formik.touched.phone && formik.errors.phone}
                                 />
-                            </Grid>
-                            <Grid item lg={6} md={6} sm={12}>
-                                <TextField
-                                    fullWidth
-                                    label="Address"
-                                    name="address"
-                                    value={formik.values.address}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.address && Boolean(formik.errors.address)}
-                                    helperText={formik.touched.address && formik.errors.address}
-                                />
-                            </Grid>
-                            <Grid item lg={6} md={6} sm={12}>
-                                <TextField
-                                    fullWidth
-                                    disabled
-                                    label="Sponsorship Code Used"
-                                    name="sponsorship_code_used"
-                                    value={formik.values.sponsorship_code_used}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.sponsorship_code_used && Boolean(formik.errors.sponsorship_code_used)}
-                                    helperText={formik.touched.sponsorship_code_used && formik.errors.sponsorship_code_used}
-                                />
-                            </Grid>
-                            <Grid item lg={12} md={12} sm={12}>
-                                <Box display="flex" alignItems="center">
-                                    <Typography>
-                                    Sponsorship Code Owned: 
-                                    </Typography>
-                                    <Typography
-                                        onClick={() => handleCopy(user.sponsorship_code_owned)}
-                                        style={{ cursor: 'pointer', marginLeft: '10px' }}
-                                    >
-                                        {user.sponsorship_code_owned} <ContentCopyIcon fontSize="small" sx={{ pt: 0.5 }} color="action" />
-                                    </Typography>
-                                </Box>
                             </Grid>
                         </Grid>
                         <Box mt={2}>

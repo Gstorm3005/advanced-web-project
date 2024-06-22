@@ -35,7 +35,7 @@ function ProfilePage() {
         .catch((error) => {
           console.error(error);
         });
-        axios.get(`http://localhost:5000/auth/api/check`, { headers: { accessToken: localStorage.getItem("accessToken"), apikey: process.env.REACT_APP_API_KEY, role: process.env.REACT_APP_ROLE } }).then((response) => {
+        axios.get(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/check`, { headers: { accessToken: localStorage.getItem("accessToken"), apikey: process.env.REACT_APP_API_KEY, role: process.env.REACT_APP_ROLE } }).then((response) => {
             if (response.data.error) {
                 setUserSQL({});
             } else {
@@ -86,7 +86,7 @@ function ProfilePage() {
                 values.sponsorship_code_used = 'none';
             }
             
-            axios.put(`http://localhost:5000/auth/api/user/${userInfo.id}`, values,{
+            axios.put(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${userInfo.id}`, values,{
                 headers: {
                   accessToken: localStorage.getItem("accessToken"),
                   apikey: process.env.REACT_APP_API_KEY,
@@ -99,6 +99,13 @@ function ProfilePage() {
                 } else {
                   setSnackbarContent(response.data.message);
                   setSnackbarSeverity("success");
+                  localStorage.removeItem("accessToken")
+                  setAuthState({ // Reset the auth state
+                    userInfo: null,
+                    isAuthenticated: false
+                  });
+                  navigate("/login")
+
                 }
                 setSnackbarOpen(true);
               })
@@ -112,7 +119,7 @@ function ProfilePage() {
     });
 
     const handleDelete = () => {
-        axios.delete(`http://localhost:5000/auth/api/user/${userInfo.id}`, {
+        axios.delete(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${userInfo.id}`, {
             headers: {
                 accessToken: localStorage.getItem("accessToken"),
                 apikey: process.env.REACT_APP_API_KEY,

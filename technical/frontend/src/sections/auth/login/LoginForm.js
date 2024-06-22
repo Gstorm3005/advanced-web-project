@@ -25,7 +25,7 @@ export default function LoginForm() {
     if (e) {
       e.preventDefault();
     }
-    axios.post(`http://localhost:5000/auth/api/login`, { email, password }, {
+    axios.post(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/login`, { email, password }, {
       headers: {
         apikey: process.env.REACT_APP_API_KEY,
         role: process.env.REACT_APP_ROLE

@@ -28,7 +28,7 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
     if (open && order) {
       setDelivery(null)
       setClient(null)
-      axios.get(`http://localhost:5000/auth/api/user/${order.Client.ID_user}`, {
+      axios.get(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${order.Client.ID_user}`, {
         headers: {
           accessToken: localStorage.getItem('accessToken'),
           apikey: process.env.REACT_APP_API_KEY,
@@ -45,7 +45,7 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
         console.error(error);
       });
       if(order.Delivery){
-        axios.get(`http://localhost:5000/auth/api/user/${order.Delivery.ID_user}`, {
+        axios.get(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${order.Delivery.ID_user}`, {
           headers: {
             accessToken: localStorage.getItem('accessToken'),
             apikey: process.env.REACT_APP_API_KEY,

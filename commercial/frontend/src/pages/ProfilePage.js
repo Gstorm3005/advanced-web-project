@@ -16,7 +16,7 @@ function ProfilePage() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get(`http://localhost:5000/auth/api/check`, {
+        axios.get(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/check`, {
             headers: {
                 accessToken: localStorage.getItem("accessToken"),
                 apikey: process.env.REACT_APP_API_KEY,
@@ -55,7 +55,7 @@ function ProfilePage() {
             phone: Yup.number().required('Phone number is required'),
         }),
         onSubmit: values => {
-            axios.put(`http://localhost:5000/auth/api/user/${userInfo.id}`, values, {
+            axios.put(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${userInfo.id}`, values, {
                 headers: {
                     accessToken: localStorage.getItem("accessToken"),
                     apikey: process.env.REACT_APP_API_KEY,
@@ -67,6 +67,13 @@ function ProfilePage() {
                 } else {
                     setSnackbarContent(response.data.message);
                     setSnackbarSeverity("success");
+                    localStorage.removeItem("accessToken")
+                    setAuthState({ // Reset the auth state
+                      userInfo: null,
+                      isAuthenticated: false
+                    });
+                    navigate("/login")
+  
                 }
                 setSnackbarOpen(true);
             }).catch((error) => {
@@ -79,7 +86,7 @@ function ProfilePage() {
     });
 
     const handleDelete = () => {
-        axios.delete(`http://localhost:5000/auth/api/user/${userInfo.id}`, {
+        axios.delete(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${userInfo.id}`, {
             headers: {
                 accessToken: localStorage.getItem("accessToken"),
                 apikey: process.env.REACT_APP_API_KEY,

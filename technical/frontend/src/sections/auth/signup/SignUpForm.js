@@ -46,7 +46,7 @@ export default function SignUpForm() {
       email: Yup.string().email('Invalid email address').required('Email is required'),
     }),
     onSubmit: (values) => {
-      axios.post(`http://localhost:5000/auth/api/signup`, values, {
+      axios.post(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/signup`, values, {
         headers: {
           apikey: process.env.REACT_APP_API_KEY,
           role: process.env.REACT_APP_ROLE

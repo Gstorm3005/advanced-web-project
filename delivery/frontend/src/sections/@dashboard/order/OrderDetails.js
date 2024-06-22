@@ -26,7 +26,7 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
 
   useEffect(() => {
     if (open && order) {
-      axios.get(`http://localhost:5000/auth/api/user/${order.Client.ID_user}`, {
+      axios.get(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${order.Client.ID_user}`, {
         headers: {
           accessToken: localStorage.getItem('accessToken'),
           apikey: process.env.REACT_APP_API_KEY,
@@ -43,7 +43,7 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
         console.error(error);
       });
       
-      axios.get(`http://localhost:5000/auth/api/user/${order.Restaurateur.ID_user}`, {
+      axios.get(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${order.Restaurateur.ID_user}`, {
         headers: {
           accessToken: localStorage.getItem('accessToken'),
           apikey: process.env.REACT_APP_API_KEY,
