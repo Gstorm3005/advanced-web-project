@@ -21,6 +21,9 @@ import axios from 'axios';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { LoadingButton } from '@mui/lab';
+import CodeMirror from '@uiw/react-codemirror';
+import { javascript } from '@codemirror/lang-javascript';
+import { okaidia } from '@uiw/codemirror-theme-okaidia';
 
 ProductAdd.propTypes = {
   open: PropTypes.bool,
@@ -59,7 +62,7 @@ export default function ProductAdd({ open, handleClose, handleMessage, handleMes
           code: values.code,
         };
 
-        const componentResponse = await axios.post(`http://localhost:5000/technical/api/components`, componentData, {
+        const componentResponse = await axios.post(`${process.env.REACT_APP_IP_ADDRESS}/components`, componentData, {
           headers: {
             accessToken: localStorage.getItem("accessToken"),
             apikey: process.env.REACT_APP_API_KEY,
@@ -113,7 +116,7 @@ export default function ProductAdd({ open, handleClose, handleMessage, handleMes
         <Container>
           <form onSubmit={formik.handleSubmit}>
             <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={12}>
                 <TextField
                   name="name"
                   label="Name"
@@ -125,17 +128,19 @@ export default function ProductAdd({ open, handleClose, handleMessage, handleMes
                   helperText={formik.touched.name && formik.errors.name}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  name="code"
-                  label="Code"
-                  fullWidth
+              <Grid item xs={12} md={12}>
+                <CodeMirror
                   value={formik.values.code}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.code && Boolean(formik.errors.code)}
-                  helperText={formik.touched.code && formik.errors.code}
+                  height="600px"
+                  theme={okaidia}
+                  extensions={[javascript({ jsx: true })]}
+                  onChange={(value) => formik.setFieldValue('code', value)}
                 />
+                {formik.touched.code && formik.errors.code && (
+                  <Typography variant="caption" color="error">
+                    {formik.errors.code}
+                  </Typography>
+                )}
               </Grid>
             </Grid>
           </form>

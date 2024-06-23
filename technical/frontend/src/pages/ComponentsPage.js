@@ -33,7 +33,6 @@ import { ProductListHead, ProductListToolbar, ProductAdd, ProductEdit } from '..
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
-  { id: 'code', label: 'Code', alignRight: false },
   { id: '' },
 ];
 
@@ -268,7 +267,7 @@ export default function ProductPage() {
                             <Checkbox checked={selectedProduct} onChange={(event) => handleClick(event, _id)} />
                           </TableCell>
 
-                          <TableCell component="th" scope="row" padding="none">
+                          <TableCell component="th" scope="row" padding="10">
                             <Stack direction="row" alignItems="center" spacing={2}>
                               <Typography variant="subtitle2" noWrap>
                                 {name}
@@ -276,7 +275,6 @@ export default function ProductPage() {
                             </Stack>
                           </TableCell>
 
-                          <TableCell align="left">{code}</TableCell>
 
                           <TableCell align="right">
                             <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, _id)}>

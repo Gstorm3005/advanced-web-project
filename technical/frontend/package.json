@@ -38,6 +38,7 @@
     ]
   },
   "dependencies": {
+    "@codemirror/lang-javascript": "^6.2.2",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@faker-js/faker": "^7.6.0",
@@ -45,9 +46,12 @@
     "@mui/icons-material": "^5.15.19",
     "@mui/lab": "^5.0.0-alpha.103",
     "@mui/material": "^5.15.19",
+    "@uiw/codemirror-theme-okaidia": "^4.22.2",
+    "@uiw/react-codemirror": "^4.22.2",
     "apexcharts": "^3.37.0",
     "axios": "^1.7.2",
     "change-case": "^4.1.2",
+    "codemirror": "^6.0.1",
     "date-fns": "^2.29.3",
     "dotenv": "^16.4.5",
     "formik": "^2.4.6",

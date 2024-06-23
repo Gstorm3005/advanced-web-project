@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 // @mui
 import {
@@ -18,17 +18,20 @@ import {
   TablePagination,
   Snackbar,
   Alert,
+  IconButton,
 } from '@mui/material';
+import Iconify from '../components/iconify';
+
 // components
 import Scrollbar from '../components/scrollbar';
 // sections
-import { ProductListHead, ProductListToolbar} from '../sections/@dashboard/component';
-
+import { ProductListHead, ProductListToolbar } from '../sections/@dashboard/component';
+import { AuthContext } from '../helpers/AuthContext';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
-  { id: 'code', label: 'Code', alignRight: false },
+  { id: '' },
 ];
 
 // ----------------------------------------------------------------------
@@ -44,6 +47,8 @@ export default function ProductPage() {
   const [message, setMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("error");
+  const { authState } = useContext(AuthContext);
+  const userInfo = authState.userInfo;
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -124,6 +129,32 @@ export default function ProductPage() {
 
   const isNotFound = !filteredProducts.length && !!filterTitle;
 
+  const handleDownload = (name, code) => {
+    axios.post(`${process.env.REACT_APP_IP_ADDRESS}/logs`, {
+      value: `${userInfo.email} with the role: developpeur has downloaded the component ${name}`,
+      type: `component`
+    }, {
+      headers: {
+        accessToken: localStorage.getItem("accessToken"),
+        apikey: process.env.REACT_APP_API_KEY,
+      },
+    }).then(() => {
+      const blob = new Blob([code], { type: 'text/javascript' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${name}.js`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }).catch((error) => {
+      console.error('Error posting log:', error);
+      setMessage('Error logging download');
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
+    });
+  };
+
   return (
     <>
       <Helmet>
@@ -169,15 +200,18 @@ export default function ProductPage() {
                             <Checkbox checked={selectedProduct} onChange={(event) => handleClick(event, _id)} />
                           </TableCell>
 
-                          <TableCell component="th" scope="row" padding="none">
+                          <TableCell component="th" scope="row" padding="10">
                             <Stack direction="row" alignItems="center" spacing={2}>
                               <Typography variant="subtitle2" noWrap>
                                 {name}
                               </Typography>
                             </Stack>
                           </TableCell>
-
-                          <TableCell align="left">{code}</TableCell>
+                          <TableCell align="right">
+                            <IconButton size="large" color="inherit" onClick={() => handleDownload(name, code)}>
+                              <Iconify icon={'ic:round-file-download'} />
+                            </IconButton>
+                          </TableCell>
                         </TableRow>
                       );
                     })}

@@ -11,6 +11,7 @@ const menuRoutes = require('./routes/menuRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const deliveryRoutes = require('./routes/deliveryRoutes');
 const componentRoute = require('./routes/componentRoute');
+const logRouter = require('./routes/logRouter');
 
 
 const app = express();
@@ -36,7 +37,7 @@ app.use('/api/menus', menuRoutes);
 app.use('/api/order', orderRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/components', componentRoute);
-
+app.use('/api/logs', logRouter);
 
 
 
