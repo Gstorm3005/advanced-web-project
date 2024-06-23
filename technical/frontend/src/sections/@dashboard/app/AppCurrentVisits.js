@@ -35,16 +35,19 @@ AppCurrentVisits.propTypes = {
   title: PropTypes.string,
   subheader: PropTypes.string,
   chartColors: PropTypes.arrayOf(PropTypes.string),
-  chartData: PropTypes.array,
+  chartData: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      value: PropTypes.number.isRequired,
+    })
+  ),
 };
 
 export default function AppCurrentVisits({ title, subheader, chartColors, chartData, ...other }) {
   const theme = useTheme();
 
-  const chartLabels = chartData.map((i) => i.label);
-
-  const chartSeries = chartData.map((i) => i.value);
-
+  const chartLabels = chartData.map((item) => item.label);
+  const chartSeries = chartData.map((item) => item.value);
   const chartOptions = useChart({
     colors: chartColors,
     labels: chartLabels,
@@ -54,9 +57,9 @@ export default function AppCurrentVisits({ title, subheader, chartColors, chartD
     tooltip: {
       fillSeriesColor: false,
       y: {
-        formatter: (seriesName) => fNumber(seriesName),
+        formatter: (value) => fNumber(value),
         title: {
-          formatter: (seriesName) => `${seriesName}`,
+          formatter: (value) => `${value}`,
         },
       },
     },

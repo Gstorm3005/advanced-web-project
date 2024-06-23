@@ -16,9 +16,9 @@ AppConversionRates.propTypes = {
 };
 
 export default function AppConversionRates({ title, subheader, chartData, ...other }) {
-  const chartLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const chartLabels = chartData.map((i) => i.label);
 
-  const chartSeries = [{ data: chartData }];
+  const chartSeries = chartData.map((i) => i.value);
 
   const chartOptions = useChart({
     tooltip: {
@@ -43,7 +43,7 @@ export default function AppConversionRates({ title, subheader, chartData, ...oth
       <CardHeader title={title} subheader={subheader} />
 
       <Box sx={{ mx: 3 }} dir="ltr">
-        <ReactApexChart type="bar" series={chartSeries} options={chartOptions} height={364} />
+        <ReactApexChart type="bar" series={[{ data: chartSeries }]} options={chartOptions} height={364} />
       </Box>
     </Card>
   );
