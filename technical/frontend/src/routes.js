@@ -16,6 +16,7 @@ import ArticlesPage from "./pages/ArticlesPage"
 import MenusPage from './pages/MenusPage';
 import OrdersPage from './pages/OrdersPage';
 import LogsPage from './pages/LogsPage';
+import ComponentsPage from './pages/ComponentsPage';
 import ProfilePage from './pages/ProfilePage';
 import SignUpPage from './pages/SignUpPage';
 
@@ -40,6 +41,7 @@ export default function Router() {
         { path: 'menus', element: <MenusPage /> },
         { path: 'orders', element: <OrdersPage /> },
         { path: 'logs', element: <LogsPage /> },
+        { path: 'components', element: <ComponentsPage /> },
         { path: 'blog', element: <BlogPage /> },
       ],
     },

@@ -30,6 +30,11 @@ const navConfig = [
     title: 'logs',
     path: '/dashboard/logs',
     icon: icon('ic_order'),
+  },
+  {
+    title: 'components',
+    path: '/dashboard/components',
+    icon: icon('ic_order'),
   }
 ];
 
