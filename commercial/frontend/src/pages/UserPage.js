@@ -1,7 +1,8 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 // @mui
 import {
   Card,
@@ -21,6 +22,8 @@ import {
   IconButton,
   TableContainer,
   TablePagination,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 // components
 import Label from '../components/label';
@@ -28,21 +31,14 @@ import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
-// mock
-import USERLIST from '../_mock/user';
-
-// ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
-  { id: 'company', label: 'Company', alignRight: false },
+  { id: 'email', label: 'Email', alignRight: false },
   { id: 'role', label: 'Role', alignRight: false },
-  { id: 'isVerified', label: 'Verified', alignRight: false },
   { id: 'status', label: 'Status', alignRight: false },
   { id: '' },
 ];
-
-// ----------------------------------------------------------------------
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -68,28 +64,46 @@ function applySortFilter(array, comparator, query) {
     return a[1] - b[1];
   });
   if (query) {
-    return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+    return filter(array, (_user) => _user.first_name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
   }
   return stabilizedThis.map((el) => el[0]);
 }
 
 export default function UserPage() {
   const [open, setOpen] = useState(null);
-
+  const [users, setUsers] = useState([]);
   const [page, setPage] = useState(0);
-
   const [order, setOrder] = useState('asc');
-
   const [selected, setSelected] = useState([]);
-
   const [orderBy, setOrderBy] = useState('name');
-
   const [filterName, setFilterName] = useState('');
-
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [selectedUserInfo, setSelectedUserInfo] = useState({});
 
-  const handleOpenMenu = (event) => {
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user`, {
+          headers: {
+            accessToken: localStorage.getItem('accessToken'),
+            apikey: process.env.REACT_APP_API_KEY,
+          },
+        });
+        setUsers(response.data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const handleOpenMenu = (event, user) => {
     setOpen(event.currentTarget);
+    setSelectedUserInfo(user);
   };
 
   const handleCloseMenu = () => {
@@ -104,7 +118,7 @@ export default function UserPage() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = USERLIST.map((n) => n.name);
+      const newSelecteds = users.map((n) => n.first_name);
       setSelected(newSelecteds);
       return;
     }
@@ -140,11 +154,66 @@ export default function UserPage() {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - users.length) : 0;
 
-  const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
+  const filteredUsers = applySortFilter(users, getComparator(order, orderBy), filterName);
 
   const isNotFound = !filteredUsers.length && !!filterName;
+
+  const handleToggleUserState = async (userId, currentState) => {
+    try {
+      const response = await axios.put(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${userId}`, 
+        { state: !currentState },
+        {
+          headers: {
+            accessToken: localStorage.getItem('accessToken'),
+            apikey: process.env.REACT_APP_API_KEY,
+          },
+        }
+      );
+      setSnackbarSeverity('success');
+      setSnackbarMessage(response.data.message);
+      setSnackbarOpen(true);
+      // Refresh the user list
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, state: !currentState } : user
+        )
+      );
+    } catch (error) {
+      setSnackbarSeverity('error');
+      setSnackbarMessage("Error updating user state");
+      setSnackbarOpen(true);
+    } finally {
+      handleCloseMenu();
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    try {
+      const response = await axios.delete(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${userId}`, {
+        headers: {
+          accessToken: localStorage.getItem('accessToken'),
+          apikey: process.env.REACT_APP_API_KEY,
+        },
+      });
+      setSnackbarSeverity('success');
+      setSnackbarMessage(response.data.message);
+      setSnackbarOpen(true);
+      // Remove the deleted user from the state
+      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+    } catch (error) {
+      setSnackbarSeverity('error');
+      setSnackbarMessage("Error deleting user");
+      setSnackbarOpen(true);
+    } finally {
+      handleCloseMenu();
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
 
   return (
     <>
@@ -172,45 +241,44 @@ export default function UserPage() {
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={USERLIST.length}
+                  rowCount={users.length}
                   numSelected={selected.length}
                   onRequestSort={handleRequestSort}
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
-                    const selectedUser = selected.indexOf(name) !== -1;
+                    const { id, role, state, email } = row;
+                    const selectedUser = selected.indexOf(row.first_name) !== -1;
 
                     return (
-                      <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
+                      <TableRow hover key={id} tabIndex={-1} role="checkbox"  selected={selectedUser}>
                         <TableCell padding="checkbox">
-                          <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
+                          <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, row.first_name)} />
                         </TableCell>
 
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
-                            <Avatar alt={name} src={avatarUrl} />
+                            <Avatar alt={row.first_name} src={`/static/mock-images/avatars/avatar_${id}.jpg`} />
                             <Typography variant="subtitle2" noWrap>
-                              {name}
+                              {row.first_name} {row.last_name}
                             </Typography>
                           </Stack>
                         </TableCell>
 
-                        <TableCell align="left">{company}</TableCell>
+                        <TableCell align="left">{email}</TableCell>
 
                         <TableCell align="left">{role}</TableCell>
 
-                        <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
-
                         <TableCell align="left">
-                          <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
+                          <Label color={(state === true && 'success') || 'error'}>{state ? 'Active' : 'Inactive'}</Label>
                         </TableCell>
 
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                          <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, { id, state })}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
+                          
                         </TableCell>
                       </TableRow>
                     );
@@ -252,7 +320,7 @@ export default function UserPage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={users.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -260,7 +328,6 @@ export default function UserPage() {
           />
         </Card>
       </Container>
-
       <Popover
         open={Boolean(open)}
         anchorEl={open}
@@ -283,12 +350,28 @@ export default function UserPage() {
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Edit
         </MenuItem>
+        <MenuItem
+          sx={{ color: selectedUserInfo.state ? 'error.main' : 'success.main' }}
+          onClick={() => handleToggleUserState(selectedUserInfo.id, selectedUserInfo.state)}
+        >
+          <Iconify icon={selectedUserInfo.state ? 'eva:slash-outline' : 'eva:checkmark-outline'} sx={{ mr: 2 }} />
+          {selectedUserInfo.state ? 'Disable' : 'Enable'}
+        </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }}>
+        <MenuItem sx={{ color: 'error.main' }} onClick={() => handleDeleteUser(selectedUserInfo.id)}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Delete
         </MenuItem>
       </Popover>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

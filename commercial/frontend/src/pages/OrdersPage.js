@@ -389,18 +389,7 @@ export default function OrderPage() {
           },
         }}
       >
-        {openOrderId && orders.find(order => order._id === openOrderId).state === 'new_order' && (
-          <MenuItem onClick={() => handleValidateOrder(openOrderId)} sx={{ color: 'success.main' }}>
-            <Iconify icon={'eva:checkmark-circle-fill'} sx={{ mr: 2 }} />
-            Validate
-          </MenuItem>
-        )}
-        {openOrderId && orders.find(order => order._id === openOrderId).state === 'new_order' && (
-          <MenuItem onClick={() => handleCancelOrder(openOrderId)} sx={{ color: 'error.main' }} >
-            <Iconify icon={'eva:close-circle-outline'} sx={{ mr: 2 }} />
-            Refuse
-          </MenuItem>
-        )}
+        
         <MenuItem onClick={() => handleViewOrder(openOrderId)}>
           <Iconify icon={'eva:eye-outline'} sx={{ mr: 2 }} />
           View

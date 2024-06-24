@@ -61,7 +61,9 @@ exports.login = async (req, res) => {
                 role: role
             }
         });
-
+        if (user.state===false) {
+           return res.json({ error: 'This account is disabled' });
+        }
         // Check if user exists and password is correct
         if (user && await bcrypt.compare(password, user.password)) {
             // Generate a JWT accessToken

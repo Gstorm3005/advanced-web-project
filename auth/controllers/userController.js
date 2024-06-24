@@ -9,10 +9,12 @@ exports.update = async (req, res) => {
         const usertoUpdate = await users.findByPk(req.params.id);
         // Update the user details
         if (usertoUpdate) {
-            if(first_name || last_name || phone || email || state || address){
-                const [updated] = await users.update({ first_name, last_name, phone, email, state }, {
+            console.log(state)
+            if(first_name || last_name || phone || email || state===false || state===true || address){
+                const updated = await users.update({ first_name, last_name, phone, email, state }, {
                     where: { id: req.params.id }
                 });
+                console.log(updated)
             }
         
 
@@ -96,6 +98,15 @@ exports.getUserById = async (req, res) => {
         } else {
             res.status(404).json({ error: 'User not found' });
         }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+exports.getAllUsers = async (req, res) => {
+    try {
+        const allUsers = await users.findAll();
+        
+        res.status(200).json(allUsers);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
