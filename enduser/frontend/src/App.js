@@ -11,6 +11,7 @@ import ThemeProvider from './theme';
 import { StyledChart } from './components/chart';
 import ScrollToTop from './components/scroll-to-top';
 import { AuthContext } from "./helpers/AuthContext";
+import { CartProvider } from './helpers/CartContext';
 
 // ----------------------------------------------------------------------
 
@@ -61,18 +62,21 @@ export default function App() {
     });
 }, []);
   return (
-    <AuthContext.Provider value={{ authState, setAuthState }}>
-      <HelmetProvider>
-        <BrowserRouter>
-          <ThemeProvider>
-            <ScrollToTop />
-            <StyledChart />
-            {!loading && (  
-              <Router />
-            )}
-          </ThemeProvider>
-        </BrowserRouter>
-      </HelmetProvider>
-    </AuthContext.Provider>
+    <CartProvider>
+      <AuthContext.Provider value={{ authState, setAuthState }}>
+        <HelmetProvider>
+          <BrowserRouter>
+            <ThemeProvider>
+              <ScrollToTop />
+              <StyledChart />
+              {!loading && (  
+                <Router />
+              )}
+            </ThemeProvider>
+          </BrowserRouter>
+        </HelmetProvider>
+      </AuthContext.Provider>
+    </CartProvider>
+    
   );
 }

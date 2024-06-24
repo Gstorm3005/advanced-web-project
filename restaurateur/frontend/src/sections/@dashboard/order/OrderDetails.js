@@ -90,6 +90,9 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
                 {delivery ? delivery.user.phone : 'Loading...'}
               </Typography>
               <Typography variant="body2">
+                Name: {delivery ? `${delivery.user.first_name} ${delivery.user.last_name}` : 'Loading...'}
+              </Typography>
+              <Typography variant="body2">
                 Email: {delivery ? delivery.user.email : 'Loading...'}
               </Typography>
             </CardContent>
@@ -105,6 +108,9 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
               </Typography>
               <Typography sx={{ mb: 1.5 }} color="text.secondary">
                 {client ? client.user.phone : 'Loading...'}
+              </Typography>
+              <Typography variant="body2">
+                Name: {client ? `${client.user.first_name} ${client.user.last_name}` : 'Loading...'}
               </Typography>
               <Typography variant="body2">
                 Email: {client ? client.user.email : 'Loading...'}

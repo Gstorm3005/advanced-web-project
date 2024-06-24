@@ -1,4 +1,5 @@
 const Menu = require('../models/Menu');
+const Article = require('../models/Article');
 
 exports.createMenu = async (req, res) => {
   try {
@@ -12,12 +13,21 @@ exports.createMenu = async (req, res) => {
 
 exports.getMenus = async (req, res) => {
   try {
-    const menus = await Menu.find().populate('Article');
+    const menus = await Menu.find()
+      .populate({
+        path: 'Article',
+        populate: {
+          path: 'Restaurateur',
+          select: 'name'
+        }
+      });
     res.status(200).json(menus);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
+
+
 
 exports.getMenuById = async (req, res) => {
   try {

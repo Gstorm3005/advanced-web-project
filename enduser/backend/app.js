@@ -31,7 +31,7 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/restaurateurs', restaurateurRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/menus', menuRoutes);
-app.use('/api/orders', orderRoutes);
+app.use('/api/order', orderRoutes);
 
 
 

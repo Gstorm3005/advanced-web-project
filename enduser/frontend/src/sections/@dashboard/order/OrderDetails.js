@@ -15,20 +15,21 @@ import {
   ListItemText,
   Grid,
   Card,
-  CardContent,
-  CardActions
+  CardContent
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const OrderDetailsDialog = ({ open, onClose, order }) => {
   const [delivery, setDelivery] = useState(null);
-  const [client, setClient] = useState(null);
+  const [restaurant, setRestaurant] = useState(null);
 
   useEffect(() => {
     if (open && order) {
-      setDelivery(null)
-      setClient(null)
-      axios.get(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${order.Client.ID_user}`, {
+      setDelivery(null);
+      setRestaurant(null);
+
+      // Fetch restaurant info
+      axios.get(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${order.Restaurateur.ID_user}`, {
         headers: {
           accessToken: localStorage.getItem('accessToken'),
           apikey: process.env.REACT_APP_API_KEY,
@@ -38,12 +39,14 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
         if (response.data.error) {
           console.error(response.data.error);
         } else {
-          setClient(response.data);
+          setRestaurant(response.data);
+          console.log(response.data)
         }
       })
       .catch((error) => {
         console.error(error);
       });
+
       if(order.Delivery){
         axios.get(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${order.Delivery.ID_user}`, {
           headers: {
@@ -90,6 +93,9 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
                 {delivery ? delivery.user.phone : 'Loading...'}
               </Typography>
               <Typography variant="body2">
+                Name: {delivery ? `${delivery.user.first_name} ${delivery.user.last_name}` : 'Loading...'}
+              </Typography>
+              <Typography variant="body2">
                 Email: {delivery ? delivery.user.email : 'Loading...'}
               </Typography>
             </CardContent>
@@ -101,16 +107,19 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
           <Card sx={{ minWidth: 275 }}>
             <CardContent>
               <Typography variant="h5" component="div">
-                Client info
+                Restaurant info
               </Typography>
               <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                {client ? client.user.phone : 'Loading...'}
+                {restaurant ? restaurant.user.phone : 'Loading...'}
               </Typography>
               <Typography variant="body2">
-                Email: {client ? client.user.email : 'Loading...'}
+                Name: {restaurant ? restaurant.roleDetails.name : 'Loading...'}
               </Typography>
               <Typography variant="body2">
-                Address: {client ? client.roleDetails.address : 'Loading...'}
+                Email: {restaurant ? restaurant.user.email : 'Loading...'}
+              </Typography>
+              <Typography variant="body2">
+                Address: {restaurant ? restaurant.roleDetails.address : 'Loading...'}
               </Typography>
             </CardContent>
           </Card>

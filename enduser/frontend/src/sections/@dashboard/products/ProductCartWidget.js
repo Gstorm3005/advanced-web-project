@@ -1,10 +1,9 @@
-// @mui
+import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import { Badge } from '@mui/material';
-// component
 import Iconify from '../../../components/iconify';
-
-// ----------------------------------------------------------------------
+import { CartContext } from '../../../helpers/CartContext';
 
 const StyledRoot = styled('div')(({ theme }) => ({
   zIndex: 999,
@@ -27,12 +26,17 @@ const StyledRoot = styled('div')(({ theme }) => ({
   '&:hover': { opacity: 0.72 },
 }));
 
-// ----------------------------------------------------------------------
+CartWidget.propTypes = {
+  onOpenCart: PropTypes.func,
+};
 
-export default function CartWidget() {
+export default function CartWidget({ onOpenCart }) {
+  const { getCartCount } = useContext(CartContext);
+  const cartCount = getCartCount();
+
   return (
-    <StyledRoot>
-      <Badge showZero badgeContent={0} color="error" max={99}>
+    <StyledRoot onClick={onOpenCart}>
+      <Badge showZero badgeContent={cartCount} color="error" max={99}>
         <Iconify icon="eva:shopping-cart-fill" width={24} height={24} />
       </Badge>
     </StyledRoot>

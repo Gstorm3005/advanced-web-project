@@ -20,13 +20,14 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { useState, useEffect, forwardRef } from 'react';
+import { useState, useEffect, forwardRef, useContext } from 'react';
 import axios from 'axios';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
 import { LoadingButton } from '@mui/lab';
+import { AuthContext } from "../../../helpers/AuthContext";
 
 MenuAdd.propTypes = {
   open: PropTypes.bool,
@@ -67,9 +68,11 @@ export default function MenuAdd({ open, handleClose, handleMessage, handleMessag
   const [errorMessage, setErrorMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [fileExtensionName, setFileExtensionName] = useState("");
+  const { authState, setAuthState } = useContext(AuthContext); // Added setAuthState to update auth state
+  const userInfo = authState.userInfo;
 
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/articles`, {
+    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/articles/restaurateur/${userInfo.id}`, {
       headers: {
         accessToken: localStorage.getItem("accessToken"),
         apikey: process.env.REACT_APP_API_KEY,

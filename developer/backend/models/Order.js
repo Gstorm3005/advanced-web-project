@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 const orderSchema = new Schema({
   price: { type: Number, required: true },
+  del_price: { type: Number, required: true },
   state: { type: String, required: true },
   notif_res: { type: Boolean, default: false },
   notif_cli: { type: Boolean, default: false },

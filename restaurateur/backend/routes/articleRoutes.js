@@ -5,6 +5,7 @@ const articleController = require('../controllers/articleController');
 
 router.post('/',articleController.createArticle); // Handle file upload
 router.get('/', articleController.getArticles);
+router.get('/restaurateur/:id', articleController.getArticleByIdRestaurateur);
 router.get('/:id', articleController.getArticleById);
 router.put('/:id',  articleController.updateArticle); // Handle file upload
 router.delete('/:id', articleController.deleteArticle);

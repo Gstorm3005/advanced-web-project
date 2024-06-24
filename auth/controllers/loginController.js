@@ -13,7 +13,7 @@ const saltRounds = 10;
 exports.signup = async (req, res) => {
     try {
         const role = req.headers.role; // Extract the role from the URL
-        const { first_name, last_name, phone, email, password, address, sponsorship_code_used } = req.body;
+        const { first_name, last_name, phone, email, password, address, sponsorship_code_used, name } = req.body;
         const randomHash = crypto.randomBytes(12).toString('base64').slice(0, 12)
         
         // Hash the password
@@ -26,7 +26,7 @@ exports.signup = async (req, res) => {
             let account;
             switch (role) {
                 case 'restaurateur':
-                    account = new Restaurateur({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: sponsorship_code_used || 'none', address });
+                    account = new Restaurateur({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: sponsorship_code_used || 'none', address, name });
                     break;
                 case 'enduser':
                     account = new Client({ ID_user: user.id, sponsorship_code_owned: randomHash, sponsorship_code_used: sponsorship_code_used || 'none', address });

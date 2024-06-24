@@ -44,6 +44,7 @@ export default function ProductsPage() {
       if (response.data.error) {
         console.error(response.data.error);
       } else {
+        console.log(response.data)
         setMenus(response.data);
       }
     })
@@ -61,6 +62,7 @@ export default function ProductsPage() {
       if (response.data.error) {
         console.error(response.data.error);
       } else {
+        console.log(response.data)
         setArticles(response.data);
         setProducts(response.data)
       }
@@ -83,11 +85,6 @@ export default function ProductsPage() {
 
         <Stack direction="row" flexWrap="wrap-reverse" alignItems="center" justifyContent="flex-end" sx={{ mb: 5 }}>
           <Stack direction="row" spacing={1} flexShrink={0} sx={{ my: 1 }}>
-            <ProductFilterSidebar
-              openFilter={openFilter}
-              onOpenFilter={handleOpenFilter}
-              onCloseFilter={handleCloseFilter}
-            />
             <ProductSort handleSelect={handleSelect} selected={selected} />
           </Stack>
         </Stack>

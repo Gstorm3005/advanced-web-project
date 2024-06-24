@@ -17,13 +17,14 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { useState, forwardRef } from 'react';
+import { useState, forwardRef, useContext } from 'react';
 import axios from 'axios';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
 import { LoadingButton } from '@mui/lab';
+import { AuthContext } from "../../../helpers/AuthContext";
 
 ProductAdd.propTypes = {
   open: PropTypes.bool,
@@ -63,6 +64,8 @@ export default function ProductAdd({ open, handleClose, handleMessage, handleMes
   const [errorMessage, setErrorMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [fileExtensionName, setFileExtensionName] = useState("");
+  const { authState, setAuthState } = useContext(AuthContext); // Added setAuthState to update auth state
+  const userInfo = authState.userInfo;
 
   const handleCloseAdd = () => {
     handleClose();
@@ -138,6 +141,7 @@ export default function ProductAdd({ open, handleClose, handleMessage, handleMes
           category: values.category,
           price: values.price,
           path: imageUrl,
+          RestaurateurId: userInfo.id
         };
 
         console.log("Creating article with data:", articleData);

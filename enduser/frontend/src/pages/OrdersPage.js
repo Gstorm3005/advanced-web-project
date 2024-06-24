@@ -108,7 +108,7 @@ export default function OrderPage() {
   const userInfo = authState.userInfo;
 
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/order/restaurateur/${userInfo.id}`, {
+    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/order/client/${userInfo.id}`, {
       headers: {
         accessToken: localStorage.getItem('accessToken'),
         apikey: process.env.REACT_APP_API_KEY,
@@ -204,14 +204,14 @@ export default function OrderPage() {
   };
 
   const handleCancelOrder = (id) => {
-    axios.put(`${process.env.REACT_APP_IP_ADDRESS}/order/${id}`, { state: 'canceled_by_restaurateur' }, {
+    axios.put(`${process.env.REACT_APP_IP_ADDRESS}/order/${id}`, { state: 'canceled_by_client' }, {
       headers: {
         accessToken: localStorage.getItem('accessToken'),
         apikey: process.env.REACT_APP_API_KEY,
       },
     })
     .then((response) => {
-      setOrders(orders.map(order => order._id === id ? { ...order, state: 'canceled_by_restaurateur' } : order));
+      setOrders(orders.map(order => order._id === id ? { ...order, state: 'canceled_by_client' } : order));
       setSnackbar({ open: true, message: 'Order has been canceled', severity: 'success' });
       handleCloseMenu();
     })
@@ -309,7 +309,7 @@ export default function OrderPage() {
                           </Stack>
                         </TableCell>
 
-                        <TableCell align="left">{price}</TableCell>
+                        <TableCell align="left">{price+row.del_price}</TableCell>
 
                         <TableCell align="left">
                           <Label color={getStateColor(state)}>{sentenceCase(state.replace(/_/g, ' '))}</Label>
@@ -390,15 +390,9 @@ export default function OrderPage() {
         }}
       >
         {openOrderId && orders.find(order => order._id === openOrderId).state === 'new_order' && (
-          <MenuItem onClick={() => handleValidateOrder(openOrderId)} sx={{ color: 'success.main' }}>
-            <Iconify icon={'eva:checkmark-circle-fill'} sx={{ mr: 2 }} />
-            Validate
-          </MenuItem>
-        )}
-        {openOrderId && orders.find(order => order._id === openOrderId).state === 'new_order' && (
           <MenuItem onClick={() => handleCancelOrder(openOrderId)} sx={{ color: 'error.main' }} >
             <Iconify icon={'eva:close-circle-outline'} sx={{ mr: 2 }} />
-            Refuse
+            Cancel
           </MenuItem>
         )}
         <MenuItem onClick={() => handleViewOrder(openOrderId)}>

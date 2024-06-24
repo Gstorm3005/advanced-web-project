@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 // @mui
 import {
@@ -29,6 +29,7 @@ import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 // sections
 import { ProductListHead, ProductListToolbar, ProductAdd, ProductEdit } from '../sections/@dashboard/menu';
+import { AuthContext } from "../helpers/AuthContext";
 
 // ----------------------------------------------------------------------
 
@@ -55,6 +56,8 @@ export default function MenuPage() {
   const [message, setMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("error");
+  const { authState, setAuthState } = useContext(AuthContext); // Added setAuthState to update auth state
+  const userInfo = authState.userInfo;
 
   const handleCloseAdd = () => {
     setOpenAdd(false);
@@ -155,7 +158,7 @@ export default function MenuPage() {
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - menus.length) : 0;
 
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/menus`, {
+    axios.get(`${process.env.REACT_APP_IP_ADDRESS}/menus/restaurateur/${userInfo.id}`, {
       headers: {
         accessToken: localStorage.getItem("accessToken"),
         apikey: process.env.REACT_APP_API_KEY,

@@ -71,6 +71,7 @@ function ProfilePage() {
             email: userSQL.email || '',
             phone: userSQL.phone || '',
             address: user.address || '',
+            name: user.name || '',
             sponsorship_code_used: user.sponsorship_code_used || ''
         },
         validationSchema: Yup.object({
@@ -79,6 +80,7 @@ function ProfilePage() {
             email: Yup.string().email('Invalid email address').required('Email is required'),
             phone: Yup.number().required('Phone number is required'),
             address: Yup.string().required('Address is required'),
+            name: Yup.string().required('Name is required'),
             sponsorship_code_used: Yup.string()
         }),
         onSubmit: values => {
@@ -223,6 +225,17 @@ function ProfilePage() {
                                 />
                             </Grid>
                             <Grid item lg={6} md={6} sm={12}>
+                                <TextField
+                                    fullWidth
+                                    label="Name"
+                                    name="name"
+                                    value={formik.values.name}
+                                    onChange={formik.handleChange}
+                                    error={formik.touched.name && Boolean(formik.errors.name)}
+                                    helperText={formik.touched.name && formik.errors.name}
+                                />
+                            </Grid>
+                            <Grid item lg={12} md={12} sm={12}>
                                 <TextField
                                     fullWidth
                                     disabled

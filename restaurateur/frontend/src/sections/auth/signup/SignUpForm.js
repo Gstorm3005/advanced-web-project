@@ -39,6 +39,7 @@ export default function SignUpForm() {
       email: '',
       password: '',
       address: '',
+      name: '',
       sponsorship_code_used: '',
     },
     validationSchema: Yup.object({
@@ -48,6 +49,7 @@ export default function SignUpForm() {
       email: Yup.string().email('Invalid email address').required('Email is required'),
       password: Yup.string().required('Password is required'),
       address: Yup.string().required('Address is required'),
+      name: Yup.string().required('Name is required'),
     }),
     onSubmit: (values) => {
       axios.post(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/signup`, values, {
@@ -141,6 +143,15 @@ export default function SignUpForm() {
             onChange={formik.handleChange}
             error={formik.touched.address && Boolean(formik.errors.address)}
             helperText={formik.touched.address && formik.errors.address}
+          />
+
+          <TextField
+            name="name"
+            label="Name"
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            error={formik.touched.name && Boolean(formik.errors.name)}
+            helperText={formik.touched.name && formik.errors.name}
           />
 
           <TextField

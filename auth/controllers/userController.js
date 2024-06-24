@@ -5,7 +5,7 @@ const Delivery = require('../models/Delivery');
 
 exports.update = async (req, res) => {
     try {
-        const { first_name, last_name, phone, email, state, address, sponsorship_code_used } = req.body;
+        const { first_name, last_name, phone, email, state, address, sponsorship_code_used, name } = req.body;
         const usertoUpdate = await users.findByPk(req.params.id);
         // Update the user details
         if (usertoUpdate) {
@@ -19,7 +19,7 @@ exports.update = async (req, res) => {
             // Update role-specific details
             switch (usertoUpdate.role) {
                 case 'restaurateur':
-                    await Restaurateur.findOneAndUpdate({ ID_user: req.params.id },{ address, sponsorship_code_used });
+                    await Restaurateur.findOneAndUpdate({ ID_user: req.params.id },{ address, sponsorship_code_used, name });
                     break;
                 case 'enduser':
                     await Client.findOneAndUpdate({ ID_user: req.params.id },{ address, sponsorship_code_used });

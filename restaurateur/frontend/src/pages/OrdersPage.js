@@ -203,6 +203,25 @@ export default function OrderPage() {
     });
   };
 
+
+  const handleDeliverOrder = (id) => {
+    axios.put(`${process.env.REACT_APP_IP_ADDRESS}/order/${id}`, { state: 'ready_to_deliver' }, {
+      headers: {
+        accessToken: localStorage.getItem('accessToken'),
+        apikey: process.env.REACT_APP_API_KEY,
+      },
+    })
+    .then((response) => {
+      setOrders(orders.map(order => order._id === id ? { ...order, state: 'ready_to_deliver' } : order));
+      setSnackbar({ open: true, message: 'Order status updated to preparing', severity: 'success' });
+      handleCloseMenu();
+    })
+    .catch((error) => {
+      setSnackbar({ open: true, message: 'Error updating order status', severity: 'error' });
+      console.error(error);
+    });
+  };
+
   const handleCancelOrder = (id) => {
     axios.put(`${process.env.REACT_APP_IP_ADDRESS}/order/${id}`, { state: 'canceled_by_restaurateur' }, {
       headers: {
@@ -399,6 +418,12 @@ export default function OrderPage() {
           <MenuItem onClick={() => handleCancelOrder(openOrderId)} sx={{ color: 'error.main' }} >
             <Iconify icon={'eva:close-circle-outline'} sx={{ mr: 2 }} />
             Refuse
+          </MenuItem>
+        )}
+        {openOrderId && orders.find(order => order._id === openOrderId).state === 'preparing' && (
+          <MenuItem onClick={() => handleDeliverOrder(openOrderId)} sx={{ color: 'primary.main' }} >
+            <Iconify icon={'eva:checkmark-circle-fill'} sx={{ mr: 2 }} />
+            Ready
           </MenuItem>
         )}
         <MenuItem onClick={() => handleViewOrder(openOrderId)}>

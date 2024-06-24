@@ -1,4 +1,5 @@
 const Article = require('../models/Article');
+const Restaurateur = require('../models/Restaurateur');
 
 exports.createArticle = async (req, res) => {
   try {
@@ -12,7 +13,8 @@ exports.createArticle = async (req, res) => {
 
 exports.getArticles = async (req, res) => {
   try {
-    const articles = await Article.find();
+    // Populate the Restaurateur field to get Restaurateur details
+    const articles = await Article.find().populate('Restaurateur', 'name');
     res.status(200).json(articles);
   } catch (err) {
     res.status(400).json({ error: err.message });

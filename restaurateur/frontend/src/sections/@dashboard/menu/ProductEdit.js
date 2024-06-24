@@ -20,13 +20,14 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { useState, useEffect, forwardRef } from 'react';
+import { useState, useEffect, forwardRef, useContext } from 'react';
 import axios from 'axios';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
 import { LoadingButton } from '@mui/lab';
+import { AuthContext } from "../../../helpers/AuthContext";
 
 MenuEdit.propTypes = {
   open: PropTypes.bool,
@@ -74,10 +75,12 @@ export default function MenuEdit({ open, handleClose, handleMessage, handleMessa
   const [errorMessage, setErrorMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [fileExtensionName, setFileExtensionName] = useState("");
+  const { authState, setAuthState } = useContext(AuthContext); // Added setAuthState to update auth state
+  const userInfo = authState.userInfo;
 
   useEffect(() => {
     if (open) {
-      axios.get(`${process.env.REACT_APP_IP_ADDRESS}/articles`, {
+      axios.get(`${process.env.REACT_APP_IP_ADDRESS}/articles/restaurateur/${userInfo.id}`, {
         headers: {
           accessToken: localStorage.getItem("accessToken"),
           apikey: process.env.REACT_APP_API_KEY,
@@ -120,7 +123,7 @@ export default function MenuEdit({ open, handleClose, handleMessage, handleMessa
           });
       }
     }
-  }, [ open]);
+  }, [open]);
 
   const handleCloseEdit = () => {
     handleClose();
@@ -219,8 +222,12 @@ export default function MenuEdit({ open, handleClose, handleMessage, handleMessa
         if (menuResponse.data.error) {
           throw new Error(menuResponse.data.error);
         }
-        const imageDeleteResponse = await axios.delete(`http://localhost:5010/api/uploads/${initialValues.path}`);
-        console.log(imageDeleteResponse)
+
+        if (croppingImage) {
+          const imageDeleteResponse = await axios.delete(`http://localhost:5010/api/uploads/${initialValues.path}`);
+          console.log(imageDeleteResponse);
+        }
+
         formik.resetForm();
         setCroppingImage(null);
         setCroppedImageUrl(null);
