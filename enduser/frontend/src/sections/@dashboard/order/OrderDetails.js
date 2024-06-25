@@ -27,7 +27,7 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
     if (open && order) {
       setDelivery(null);
       setRestaurant(null);
-
+      console.log(order)
       // Fetch restaurant info
       axios.get(`${process.env.REACT_APP_AUTH_IP_ADDRESS}/user/${order.Restaurateur.ID_user}`, {
         headers: {
