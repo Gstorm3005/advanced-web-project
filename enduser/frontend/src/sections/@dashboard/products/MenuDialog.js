@@ -78,7 +78,7 @@ export default function FullScreenDialog({open, handleClose, Article }) {
             backgroundColor: "rgba(202, 202, 202, 0.77)",
           }}
         >{article.Restaurateur.name}</Label>
-                    <StyledProductImg alt={article.name} src={`http://image-service:5010/uploads/${article.path}`} />
+                    <StyledProductImg alt={article.name} src={`http://localhost:5010/uploads/${article.path}`} />
                   </Box>
                   <Stack spacing={2} sx={{ p: 3 }}>
                   <Stack direction="row" alignItems="center" justifyContent="space-between">

@@ -31,7 +31,7 @@ const microservices = [
 
 const fetchPerformanceData = async (endpoint) => {
   try {
-    const response = await axios.get(`http://gateway:5000/${endpoint}/api/performance`, {
+    const response = await axios.get(`http://localhost:5000/${endpoint}/api/performance`, {
       headers: {
         accessToken: localStorage.getItem("accessToken"),
         apikey: process.env.REACT_APP_API_KEY,

@@ -39,10 +39,24 @@ const servicesDocker = [
 
 // Enable CORS
 app.use(cors({
-    origin: ['http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003', 'http://localhost:3004', 'http://localhost:3005', 'http://localhost:3006', 'http://image-service:5010'], // Update with your frontend URLs
+    origin: [
+        'http://localhost:3001', 
+        'http://localhost:3002', 
+        'http://localhost:3003', 
+        'http://localhost:3004', 
+        'http://localhost:3005', 
+        'http://localhost:3006', 
+        'http://enduser-frontend:3001', 
+        'http://restaurateur-frontend:3002', 
+        'http://delivery-frontend:3003', 
+        'http://developer-frontend:3004', 
+        'http://commercial-frontend:3005', 
+        'http://technical-frontend:3006', 
+        'http://localhost:5010'
+    ], // Update with your frontend URLs
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
-    allowedHeaders: ['Content-Type', 'authenticated', 'apiKey', 'accessToken'] // Add 'authenticated' header
+    allowedHeaders: ['Content-Type', 'authenticated', 'apiKey', 'accessToken', 'role'] // Add 'authenticated' header
 }));
 
 // // Middleware to parse JSON bodies
