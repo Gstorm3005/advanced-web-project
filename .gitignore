@@ -12,4 +12,5 @@
 /technical/frontend/node_modules
 /gateway/node_modules
 /image-service/node_modules
+/image-service/uploads
 /auth/node_modules
