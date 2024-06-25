@@ -17,7 +17,7 @@ exports.createOrder = async (req, res) => {
       const restaurateurId = item.restaurateur._id;
       if (!orders[restaurateurId]) {
         orders[restaurateurId] = {
-          price: total,
+          price: 0,
           state: 'new_order',
           del_price: 200,
           notif_res: true,
