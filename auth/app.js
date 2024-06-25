@@ -11,7 +11,7 @@ const db = require("./SQLmodels");
 
 const app = express();
 
-mongoose.connect('mongodb://127.0.0.1:27017/clientdb')
+mongoose.connect('mongodb://mongo:27017/clientdb')
 // mongoose.connect('mongodb://mongo:27017/clientdb')
 .then(() => console.log('MongoDB connected...'))
 .catch(err => console.log(err));
@@ -39,7 +39,7 @@ const servicesDocker = [
 
 // Enable CORS
 app.use(cors({
-    origin: ['http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003', 'http://localhost:3004', 'http://localhost:3005', 'http://localhost:3006', 'http://localhost:5010'], // Update with your frontend URLs
+    origin: ['http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003', 'http://localhost:3004', 'http://localhost:3005', 'http://localhost:3006', 'http://image-service:5010'], // Update with your frontend URLs
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     allowedHeaders: ['Content-Type', 'authenticated', 'apiKey', 'accessToken'] // Add 'authenticated' header

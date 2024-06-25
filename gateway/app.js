@@ -10,7 +10,7 @@ const db = require("./SQLmodels");
 const app = express();
 
 
-mongoose.connect('mongodb://127.0.0.1:27017/clientdb')
+mongoose.connect('mongodb://mongo:27017/clientdb')
 // mongoose.connect('mongodb://mongo:27017/clientdb')
 .then(() => console.log('MongoDB connected...'))
 .catch(err => console.log(err));
@@ -35,12 +35,12 @@ const servicesDocker = [
     { path: '/developer', target: 'http://developer-backend:5004' },
     { path: '/commercial', target: 'http://commercial-backend:5005' },
     { path: '/technical', target: 'http://technical-backend:5006' },
-    { path: '/auth', target: 'http://localhost:5007' }
+    { path: '/auth', target: 'http://auth-service:5007' }
 ];
 
 // Enable CORS
 app.use(cors({
-    origin: ['http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003', 'http://localhost:3004', 'http://localhost:3005', 'http://localhost:3006', 'http://localhost:5010'], // Update with your frontend URLs
+    origin: ['http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003', 'http://localhost:3004', 'http://localhost:3005', 'http://localhost:3006', 'http://image-service:5010'], // Update with your frontend URLs
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     allowedHeaders: ['Content-Type', 'authenticated', 'apiKey', 'accessToken', 'role'] // Add 'authenticated' header
@@ -83,7 +83,7 @@ app.use((req, res, next) => {
 // });
 
 // // Proxy setup with authentication middleware and user info in headers
-services.forEach(service => {
+servicesDocker.forEach(service => {
     app.use(service.path, authMiddleware, (req, res, next) => {
         createProxyMiddleware({
             target: service.target,
