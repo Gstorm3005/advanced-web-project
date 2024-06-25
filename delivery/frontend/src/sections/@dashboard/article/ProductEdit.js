@@ -146,7 +146,7 @@ export default function ProductEdit({ open, handleClose, handleMessage, handleMe
           formData.append('image', croppingImage, `image.${fileExtensionName}`);
 
           console.log("Uploading image to image service...");
-          const imageUploadResponse = await axios.post('http://localhost:5010/api/uploads', formData, {
+          const imageUploadResponse = await axios.post('http://image-service:5010/api/uploads', formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
               accessToken: localStorage.getItem("accessToken"),
@@ -189,7 +189,7 @@ export default function ProductEdit({ open, handleClose, handleMessage, handleMe
         if (articleResponse.data.error) {
           throw new Error(articleResponse.data.error);
         }
-        const imageDeleteResponse = await axios.delete(`http://localhost:5010/api/uploads/${initialValues.path}`);
+        const imageDeleteResponse = await axios.delete(`http://image-service:5010/api/uploads/${initialValues.path}`);
         console.log(imageDeleteResponse)
         formik.resetForm();
         setCroppingImage(null);
@@ -289,7 +289,7 @@ export default function ProductEdit({ open, handleClose, handleMessage, handleMe
                   </Button>
                   {initialValues.path && (
                     <Box sx={{ mt: 2 }}>
-                      <img src={`http://localhost:5010/uploads/${initialValues.path}`} alt="Article" style={{ width: '100%' }} />
+                      <img src={`http://image-service:5010/uploads/${initialValues.path}`} alt="Article" style={{ width: '100%' }} />
                     </Box>
                   )}
                 </Box>

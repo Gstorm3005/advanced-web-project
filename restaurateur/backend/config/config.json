@@ -3,21 +3,21 @@
     "username": "root",
     "password": "1627",
     "database": "advanced-web-project",
-    "host": "127.0.0.1",
+    "host": "mysql",
     "dialect": "mysql"
   },
   "test": {
     "username": "root",
     "password": "1627",
     "database": "advanced-web-project",
-    "host": "127.0.0.1",
+    "host": "mysql",
     "dialect": "mysql"
   },
   "production": {
     "username": "root",
     "password": "1627",
     "database": "advanced-web-project",
-    "host": "127.0.0.1",
+    "host": "mysql",
     "dialect": "mysql"
   }
 }

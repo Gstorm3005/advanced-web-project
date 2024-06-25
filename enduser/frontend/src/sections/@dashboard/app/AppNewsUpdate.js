@@ -98,7 +98,7 @@ function NewsItem({ item, setTotalPrice, refreshCart }) {
 
   return (
     <Stack direction="row" alignItems="center" spacing={2}>
-      <Box component="img" alt={name} src={path ? `http://localhost:5010/uploads/${path}` : `/assets/illustrations/indisponible.png`} sx={{ width: 48, height: 48, borderRadius: 1.5, flexShrink: 0 }} />
+      <Box component="img" alt={name} src={path ? `http://image-service:5010/uploads/${path}` : `/assets/illustrations/indisponible.png`} sx={{ width: 48, height: 48, borderRadius: 1.5, flexShrink: 0 }} />
       <Box sx={{ minWidth: 150, flexGrow: 1 }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Link sx={{ whiteSpace: 'normal', wordWrap: 'break-word' }} color="inherit" variant="subtitle2" underline="hover" noWrap>
