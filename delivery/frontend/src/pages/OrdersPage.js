@@ -274,9 +274,6 @@ export default function OrderPage() {
           <Typography variant="h4" gutterBottom>
             Orders
           </Typography>
-          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            New Order
-          </Button>
         </Stack>
 
         <Card>

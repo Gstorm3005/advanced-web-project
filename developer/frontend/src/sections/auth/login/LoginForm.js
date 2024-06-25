@@ -47,7 +47,7 @@ export default function LoginForm() {
             role: response.data.userInfo.role
           }
         });
-        navigate("/dashboard/app");
+        navigate("/dashboard/components");
       }
     }).catch((error) => {
       console.log(error);

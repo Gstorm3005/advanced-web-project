@@ -31,7 +31,7 @@ export default function Router() {
       path: '/dashboard',
       element: isAuthenticated ? <DashboardLayout /> : <Navigate to="/login" />,
       children: [
-        { element: <Navigate to="/dashboard/app" />, index: true },
+        { element: <Navigate to="/dashboard/components" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
         { path: 'profile', element: <ProfilePage /> },
         { path: 'user', element: <UserPage /> },
@@ -45,16 +45,16 @@ export default function Router() {
     },
     {
       path: 'login',
-      element: isAuthenticated ? <Navigate to="/dashboard/app" /> : <LoginPage />,
+      element: isAuthenticated ? <Navigate to="/dashboard/components" /> : <LoginPage />,
     },
     {
       path: 'signup',
-      element: isAuthenticated ? <Navigate to="/dashboard/app" /> : <SignUpPage />,
+      element: isAuthenticated ? <Navigate to="/dashboard/components" /> : <SignUpPage />,
     },
     {
       element: <SimpleLayout />,
       children: [
-        { element: <Navigate to={isAuthenticated ? "/dashboard/app" : "/login"} />, index: true },
+        { element: <Navigate to={isAuthenticated ? "/dashboard/components" : "/login"} />, index: true },
         { path: '404', element: <Page404 /> },
         { path: '*', element: <Navigate to="/404" /> },
       ],

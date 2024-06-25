@@ -23,7 +23,7 @@ import { ProductListHead } from '../sections/@dashboard/log';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'value', label: 'login / sign up history', alignRight: false },
+  { id: 'value', label: 'Authentication / download history', alignRight: false },
   { id: '' }
 ];
 
