@@ -18,8 +18,8 @@ exports.createOrder = async (req, res) => {
       if (!orders[restaurateurId]) {
         orders[restaurateurId] = {
           price: total,
-          del_price: 200,
           state: 'new_order',
+          del_price: 200,
           notif_res: true,
           notif_cli: false,
           notif_del: false,
@@ -30,7 +30,19 @@ exports.createOrder = async (req, res) => {
         };
       }
 
-      
+      if (item.type === 'menu') {
+        orders[restaurateurId].Menu.push({
+          menuId: item._id,
+          quantity: item.quantity
+        });
+        orders[restaurateurId].price += item.price * item.quantity;
+      } else if (item.type === 'article') {
+        orders[restaurateurId].Article.push({
+          articleId: item._id,
+          quantity: item.quantity
+        });
+        orders[restaurateurId].price += item.price * item.quantity;
+      }
     });
 
     // Convert the orders object to an array
