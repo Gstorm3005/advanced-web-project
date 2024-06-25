@@ -210,7 +210,7 @@ export default function MenuPage() {
             setSelected([]);
             // Now send a request to delete the image
             axios
-              .delete(`http://image-service:5010/api/uploads/${deletePath}`)
+              .delete(`http://localhost:5010/api/uploads/${deletePath}`)
               .then((imageResponse) => {
                 console.log('Image deleted:', imageResponse.data);
               })

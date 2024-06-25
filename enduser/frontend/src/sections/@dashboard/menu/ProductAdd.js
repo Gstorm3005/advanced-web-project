@@ -144,7 +144,7 @@ export default function MenuAdd({ open, handleClose, handleMessage, handleMessag
           formData.append('image', croppingImage, `image.${fileExtensionName}`);
 
           console.log("Uploading image to image service...");
-          const imageUploadResponse = await axios.post('http://image-service:5010/api/uploads', formData, {
+          const imageUploadResponse = await axios.post('http://localhost:5010/api/uploads', formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },

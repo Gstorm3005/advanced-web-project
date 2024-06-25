@@ -60,7 +60,7 @@ export default function ShopProductCard({ product, selected }) {
             backgroundColor: "rgba(202, 202, 202, 0.77)",
           }}
         >{Restaurateur.name}</Label>
-        <StyledProductImg alt={name} src={`http://image-service:5010/uploads/${path}`} />
+        <StyledProductImg alt={name} src={`http://localhost:5010/uploads/${path}`} />
       </Box>
 
       <Stack spacing={2} sx={{ p: 3 }}>

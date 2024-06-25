@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.7.0'
 services:
   mongo:
     image: mongo
@@ -11,7 +11,7 @@ services:
       MYSQL_ROOT_PASSWORD: '1627'
       MYSQL_DATABASE: 'advanced-web-project'
     ports:
-      - '3306:3306'
+      - '3307:3306'
 
   enduser-backend:
     build: ./enduser/backend
