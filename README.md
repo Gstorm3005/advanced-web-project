@@ -30,6 +30,7 @@ npm install
 npm start
 ```
 * Deploy the project on Docker:
+Change the repository to docker-test and run this single command (you'll need docker desktop app open) :
 ```sh
 docker-compose up --build
 ```
