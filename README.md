@@ -1,6 +1,5 @@
-# CESI-Eats
+# advanced-web-project
 
-![cesi-eats-high-resolution-logo](https://github.com/NadirZamouche/CESI-Eats/assets/95188070/0be6d4cc-a03a-41a2-97e9-2d441c3ed722)
 
 
 
